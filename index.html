@@ -393,12 +393,15 @@ I’m eager to contribute my expertise to your team and help drive success with 
     var popupMessage = popup ? popup.querySelector('.form-popup__message') : null;
     var popupTimer = null;
     var messageTimer = null;
+    var FEEDBACK_DURATION = 4000;
+    var SUCCESS_MESSAGE = 'Thank you! Your message has been received — I will reply shortly.';
+    var ERROR_MESSAGE = 'Something went wrong. Please try again in a moment.';
 
     function hidePopup() {
       if (!popup) {
         return;
       }
-      popup.style.display = 'none';
+      popup.classList.remove('form-popup--visible', 'form-popup--success', 'form-popup--error');
       popup.setAttribute('aria-hidden', 'true');
       if (popupMessage) {
         popupMessage.textContent = '';
@@ -428,13 +431,13 @@ I’m eager to contribute my expertise to your team and help drive success with 
       }
       popup.classList.remove('form-popup--success', 'form-popup--error');
       popup.classList.add(type === 'success' ? 'form-popup--success' : 'form-popup--error');
+      popup.classList.add('form-popup--visible');
       popupMessage.textContent = message;
-      popup.style.display = 'flex';
       popup.setAttribute('aria-hidden', 'false');
       if (popupTimer) {
         clearTimeout(popupTimer);
       }
-      popupTimer = setTimeout(hidePopup, 2000);
+      popupTimer = setTimeout(hidePopup, FEEDBACK_DURATION);
     }
 
     function showMessage(element, text) {
@@ -448,7 +451,7 @@ I’m eager to contribute my expertise to your team and help drive success with 
       if (messageTimer) {
         clearTimeout(messageTimer);
       }
-      messageTimer = setTimeout(hideMessages, 2000);
+      messageTimer = setTimeout(hideMessages, FEEDBACK_DURATION);
       showPopup(text, type);
     }
 
@@ -467,9 +470,9 @@ I’m eager to contribute my expertise to your team and help drive success with 
         submitBtn.textContent = 'Sending...';
       }
 
-      var nameInput = form.querySelector('[name=\"name\"]');
-      var emailInput = form.querySelector('[name=\"email\"]');
-      var messageInput = form.querySelector('[name=\"message\"]');
+      var nameInput = form.querySelector('[name="name"]');
+      var emailInput = form.querySelector('[name="email"]');
+      var messageInput = form.querySelector('[name="message"]');
       var payload = {
         name: nameInput ? nameInput.value.trim() : '',
         email: emailInput ? emailInput.value.trim() : '',
@@ -490,16 +493,15 @@ I’m eager to contribute my expertise to your team and help drive success with 
           });
         })
         .then(function (result) {
-          if (result.ok && result.data && result.data.success) {
+          if (result.ok) {
             form.reset();
-            showFeedback(successEl, result.data.message || 'Thank you! Your message has been sent successfully.', 'success');
+            showFeedback(successEl, SUCCESS_MESSAGE, 'success');
           } else {
-            var errorText = (result.data && result.data.message) || 'Failed to send the message. Please try again later.';
-            showFeedback(errorEl, errorText, 'error');
+            showFeedback(errorEl, ERROR_MESSAGE, 'error');
           }
         })
         .catch(function () {
-          showFeedback(errorEl, 'Failed to send the message. Please try again later.', 'error');
+          showFeedback(errorEl, ERROR_MESSAGE, 'error');
         })
         .finally(function () {
           if (submitBtn) {
