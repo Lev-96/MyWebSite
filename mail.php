@@ -68,6 +68,8 @@ try {
     header('Content-type: application/json');
     echo json_encode($response);
 } catch (Exception $e) {
+    var_dump($e->getMessage(), $e->getFile(), $e->getLine());
+    die();
     $statusMessage = 'error';
     header("Location: index.html?status=$statusMessage");
     exit;
