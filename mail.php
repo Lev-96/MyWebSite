@@ -5,8 +5,6 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 require __DIR__ . '/vendor/autoload.php';
 
-require 'vendor/autoload.php';
-
 $statusMessage = '';
 $name = $_POST["name"];
 $email = $_POST["email"];
