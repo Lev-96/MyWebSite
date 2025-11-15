@@ -5,9 +5,20 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 require __DIR__ . '/vendor/autoload.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: index.html');
+function respond(array $payload, int $statusCode = 200): void
+{
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode($payload);
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Allow: POST');
+    respond([
+        'success' => false,
+        'message' => 'Method not allowed.',
+    ], 405);
 }
 
 $name = trim($_POST['name'] ?? '');
@@ -15,8 +26,10 @@ $email = trim($_POST['email'] ?? '');
 $message = trim($_POST['message'] ?? '');
 
 if ($name === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header('Location: index.html?status=invalid');
-    exit;
+    respond([
+        'success' => false,
+        'message' => 'Проверьте корректность заполнения полей и попробуйте снова.',
+    ], 422);
 }
 
 try {
@@ -67,9 +80,14 @@ try {
     $mail->AltBody = "You have a new message from $name ($email).\nMessage: $message";
 
     $mail->send();
-    header('Location: index.html?status=success');
-    exit;
+    respond([
+        'success' => true,
+        'message' => 'Спасибо! Ваше сообщение успешно отправлено.',
+    ]);
 } catch (Exception $e) {
-    header('Location: index.html?status=error');
-    exit;
+    error_log(sprintf('Contact form mailer error: %s', $e->getMessage()));
+    respond([
+        'success' => false,
+        'message' => 'Не удалось отправить сообщение. Попробуйте позже.',
+    ], 500);
 }
