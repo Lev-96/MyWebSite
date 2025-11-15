@@ -6,28 +6,25 @@ use PHPMailer\PHPMailer\Exception;
 require 'vendor/autoload.php';
 
 $statusMessage = '';
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $message = $_POST['message'];
+$name = $_POST["name"];
+$email = $_POST["email"];
+$message = $_POST["message"];
+try {
     $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 'levonbakunts3@gmail.com';
+    $mail->Password = 'fago gfkl muqh vfjg';
+    $mail->SMTPSecure = 'tls';
+    $mail->Port = 465;
+    $mail->CharSet = "UTF-8";
+    $mail->setFrom($email, 'Website Form');
+    $mail->addAddress('levonbakunts96@gmail.com', 'Levon Bakunts');
 
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'levonbakunts3@gmail.com';
-        $mail->Password = 'fago gfkl muqh vfjg';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-
-        $mail->setFrom($email, 'Website Form');
-        $mail->addAddress('levonbakunts96@gmail.com', 'Levon Bakunts');
-
-        $mail->isHTML(true);
-        $mail->Subject = 'New Message from Website Form';
-        $bodyContent = "
+    $mail->isHTML(true);
+    $mail->Subject = 'New Message from Website Form';
+    $bodyContent = "
             <html>
                 <head>
                     <style>
@@ -54,14 +51,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </table>
                 </body>
             </html>";
-        $mail->Body = $bodyContent;
-        $mail->AltBody = "You have a new message from $name ($email).\nMessage: $message";
+    $mail->Body = $bodyContent;
+    $mail->AltBody = "You have a new message from $name ($email).\nMessage: $message";
 
-        $mail->send();
-        $statusMessage = 'success';
-    } catch (Exception $e) {
-        $statusMessage = 'error';
+    if (!$mail->send()) {
+        $message = "Error is sent message to $email";
+
+    } else {
+        $message = "Sent Message is successfully sent to $email!";
     }
+
+    $response = ["message" => $message];
+
+    header('Content-type: application/json');
+    echo json_encode($response);
+} catch (Exception $e) {
+    $statusMessage = 'error';
     header("Location: index.html?status=$statusMessage");
     exit;
 }
