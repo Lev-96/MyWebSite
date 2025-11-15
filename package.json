@@ -1,0 +1,23 @@
+{
+  "name": "mywebsite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "jquery.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lev-96/MyWebSite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lev-96/MyWebSite/issues"
+  },
+  "homepage": "https://github.com/Lev-96/MyWebSite#readme",
+  "dependencies": {
+    "nodemailer": "^7.0.10"
+  }
+}

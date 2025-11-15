@@ -319,7 +319,7 @@ I’m eager to contribute my expertise to your team and help drive success with 
                 <div class="u-container-layout u-valign-middle-lg u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-container-layout-1">
                   <h2 class="u-align-left u-text u-text-1"> Get in Touch</h2>
                   <div class="u-align-left u-expanded-width-lg u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-form u-form-1">
-                      <form action="./mail.php" method="POST" class="u-clearfix u-form-spacing-28 u-form-vertical u-inner-form" style="padding: 0px;">
+                      <form action="/.netlify/functions/send-mail" method="POST" class="u-clearfix u-form-spacing-28 u-form-vertical u-inner-form" style="padding: 0px;">
                           <div class="u-form-group u-form-name u-label-top">
                               <label for="name-5a14" class="u-label">Name</label>
                               <input type="text" placeholder="Enter your Name" id="name-5a14" name="name" class="u-border-2 u-border-grey-75 u-border-no-left u-border-no-right u-border-no-top u-input u-input-rectangle u-none u-input-1" required>
@@ -409,11 +409,19 @@ I’m eager to contribute my expertise to your team and help drive success with 
         submitBtn.textContent = 'Sending...';
       }
 
-      var formData = new FormData(form);
+      var payload = {
+        name: (form.querySelector('[name=\"name\"]')?.value || '').trim(),
+        email: (form.querySelector('[name=\"email\"]')?.value || '').trim(),
+        message: (form.querySelector('[name=\"message\"]')?.value || '').trim()
+      };
 
-      fetch(form.action, {
+      fetch(form.getAttribute('action') || '/.netlify/functions/send-mail', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
       })
         .then(function (response) {
           return response.json().then(function (data) {
