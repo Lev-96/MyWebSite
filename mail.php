@@ -1,14 +1,24 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-$statusMessage = '';
-$name = $_POST["name"];
-$email = $_POST["email"];
-$message = $_POST["message"];
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: index.html');
+    exit;
+}
+
+$name = trim($_POST['name'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$message = trim($_POST['message'] ?? '');
+
+if ($name === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    header('Location: index.html?status=invalid');
+    exit;
+}
+
 try {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
@@ -16,11 +26,13 @@ try {
     $mail->SMTPAuth = true;
     $mail->Username = 'levonbakunts3@gmail.com';
     $mail->Password = 'fago gfkl muqh vfjg';
-    $mail->SMTPSecure = 'tls';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
-    $mail->CharSet = "UTF-8";
-    $mail->setFrom($email, 'Website Form');
+    $mail->CharSet = 'UTF-8';
+
+    $mail->setFrom('levonbakunts3@gmail.com', 'Website Form');
     $mail->addAddress('levonbakunts96@gmail.com', 'Levon Bakunts');
+    $mail->addReplyTo($email, $name);
 
     $mail->isHTML(true);
     $mail->Subject = 'New Message from Website Form';
@@ -54,19 +66,10 @@ try {
     $mail->Body = $bodyContent;
     $mail->AltBody = "You have a new message from $name ($email).\nMessage: $message";
 
-    if (!$mail->send()) {
-        $message = "Error is sent message to $email";
-
-    } else {
-        $message = "Sent Message is successfully sent to $email!";
-    }
-
-    $response = ["message" => $message];
-
-    header('Content-type: application/json');
-    echo json_encode($response);
+    $mail->send();
+    header('Location: index.html?status=success');
+    exit;
 } catch (Exception $e) {
-    $statusMessage = 'error';
-    header("Location: index.html?status=$statusMessage");
+    header('Location: index.html?status=error');
     exit;
 }

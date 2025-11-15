@@ -374,6 +374,49 @@ I’m eager to contribute my expertise to your team and help drive success with 
   <section class="u-backlink u-clearfix u-grey-80">
           <script>document.write(new Date().getFullYear())</script>
   </section>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var params = new URLSearchParams(window.location.search);
+    var status = params.get('status');
+    if (!status) {
+      return;
+    }
+
+    var successEl = document.querySelector('.u-form-send-success');
+    var errorEl = document.querySelector('.u-form-send-error');
+
+    if (successEl) {
+      successEl.style.display = 'none';
+    }
+    if (errorEl) {
+      errorEl.style.display = 'none';
+    }
+
+    switch (status) {
+      case 'success':
+        if (successEl) {
+          successEl.textContent = 'Спасибо! Ваше сообщение успешно отправлено.';
+          successEl.style.display = 'block';
+        }
+        break;
+      case 'invalid':
+        if (errorEl) {
+          errorEl.textContent = 'Пожалуйста, заполните форму корректно и попробуйте снова.';
+          errorEl.style.display = 'block';
+        }
+        break;
+      default:
+        if (errorEl) {
+          errorEl.textContent = 'Не удалось отправить сообщение. Попробуйте позже.';
+          errorEl.style.display = 'block';
+        }
+    }
+
+    params.delete('status');
+    var cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, document.title, cleanUrl);
+  });
+</script>
 </body>
 
 </html>
