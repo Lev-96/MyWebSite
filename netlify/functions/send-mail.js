@@ -43,6 +43,18 @@ const buildHtmlBody = ({ name, email, message }) => `
   </table>
 `;
 
+const buildConfirmationHtml = ({ name, message }) => `
+  <div style="font-family:Arial,sans-serif;color:#1f2937;">
+    <h2 style="margin-bottom:8px;">Hi ${name || 'there'}!</h2>
+    <p style="margin-bottom:16px;">Thanks for reaching out. We received your message and will get back to you shortly.</p>
+    <div style="padding:16px;border:1px solid #d1d5db;border-radius:8px;background:#f8fafc;">
+      <p style="margin:0 0 8px 0;font-weight:600;">Your message:</p>
+      <p style="margin:0;white-space:pre-line;">${message}</p>
+    </div>
+    <p style="margin-top:16px;">Best regards,<br>${SMTP_FROM_NAME}</p>
+  </div>
+`;
+
 const sanitize = (value = '') =>
   String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
 
@@ -95,8 +107,17 @@ exports.handler = async (event) => {
     html: buildHtmlBody({ name, email, message }),
   };
 
+  const confirmationMailOptions = {
+    from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`,
+    to: email,
+    subject: 'We received your message',
+    text: `Hi ${name || 'there'},\n\nThanks for reaching out! We received your message and will reply shortly.\n\nYour message:\n${message}\n\nBest regards,\n${SMTP_FROM_NAME}`,
+    html: buildConfirmationHtml({ name, message }),
+  };
+
   try {
     await transporter.sendMail(mailOptions);
+    await transporter.sendMail(confirmationMailOptions);
     return {
       statusCode: 200,
       headers: RESPONSE_HEADERS,

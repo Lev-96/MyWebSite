@@ -1947,3 +1947,36 @@
     height: 303px;
   }
 }
+
+.form-popup {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(12, 19, 31, 0.55);
+  z-index: 9999;
+  padding: 16px;
+}
+
+.form-popup__content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  max-width: 420px;
+  width: 100%;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  text-align: center;
+  color: #111827;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  border: 2px solid transparent;
+}
+
+.form-popup--success .form-popup__content {
+  border-color: #16a34a;
+}
+
+.form-popup--error .form-popup__content {
+  border-color: #dc2626;
+}

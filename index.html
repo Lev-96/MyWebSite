@@ -374,6 +374,11 @@ I’m eager to contribute my expertise to your team and help drive success with 
   <section class="u-backlink u-clearfix u-grey-80">
           <script>document.write(new Date().getFullYear())</script>
   </section>
+  <div id="form-popup" class="form-popup" role="alert" aria-live="polite" aria-hidden="true">
+    <div class="form-popup__content">
+      <span class="form-popup__message"></span>
+    </div>
+  </div>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var form = document.querySelector('.u-form form');
@@ -384,16 +389,67 @@ I’m eager to contribute my expertise to your team and help drive success with 
     var successEl = form.querySelector('.u-form-send-success');
     var errorEl = form.querySelector('.u-form-send-error');
     var submitBtn = form.querySelector('[type="submit"]');
+    var popup = document.getElementById('form-popup');
+    var popupMessage = popup ? popup.querySelector('.form-popup__message') : null;
+    var popupTimer = null;
+    var messageTimer = null;
+
+    function hidePopup() {
+      if (!popup) {
+        return;
+      }
+      popup.style.display = 'none';
+      popup.setAttribute('aria-hidden', 'true');
+      if (popupMessage) {
+        popupMessage.textContent = '';
+      }
+      if (popupTimer) {
+        clearTimeout(popupTimer);
+        popupTimer = null;
+      }
+    }
+
+    if (popup) {
+      popup.addEventListener('click', hidePopup);
+    }
 
     function hideMessages() {
       if (successEl) successEl.style.display = 'none';
       if (errorEl) errorEl.style.display = 'none';
+      if (messageTimer) {
+        clearTimeout(messageTimer);
+        messageTimer = null;
+      }
+    }
+
+    function showPopup(message, type) {
+      if (!popup || !popupMessage) {
+        return;
+      }
+      popup.classList.remove('form-popup--success', 'form-popup--error');
+      popup.classList.add(type === 'success' ? 'form-popup--success' : 'form-popup--error');
+      popupMessage.textContent = message;
+      popup.style.display = 'flex';
+      popup.setAttribute('aria-hidden', 'false');
+      if (popupTimer) {
+        clearTimeout(popupTimer);
+      }
+      popupTimer = setTimeout(hidePopup, 2000);
     }
 
     function showMessage(element, text) {
       if (!element) return;
       element.textContent = text;
       element.style.display = 'block';
+    }
+
+    function showFeedback(target, text, type) {
+      showMessage(target, text);
+      if (messageTimer) {
+        clearTimeout(messageTimer);
+      }
+      messageTimer = setTimeout(hideMessages, 2000);
+      showPopup(text, type);
     }
 
     hideMessages();
@@ -404,15 +460,20 @@ I’m eager to contribute my expertise to your team and help drive success with 
 
       hideMessages();
       if (submitBtn) {
+        if (!submitBtn.dataset.originalText) {
+          submitBtn.dataset.originalText = submitBtn.textContent;
+        }
         submitBtn.disabled = true;
-        submitBtn.dataset.originalText = submitBtn.textContent;
         submitBtn.textContent = 'Sending...';
       }
 
+      var nameInput = form.querySelector('[name=\"name\"]');
+      var emailInput = form.querySelector('[name=\"email\"]');
+      var messageInput = form.querySelector('[name=\"message\"]');
       var payload = {
-        name: (form.querySelector('[name=\"name\"]')?.value || '').trim(),
-        email: (form.querySelector('[name=\"email\"]')?.value || '').trim(),
-        message: (form.querySelector('[name=\"message\"]')?.value || '').trim()
+        name: nameInput ? nameInput.value.trim() : '',
+        email: emailInput ? emailInput.value.trim() : '',
+        message: messageInput ? messageInput.value.trim() : ''
       };
 
       fetch(form.getAttribute('action') || '/.netlify/functions/send-mail', {
@@ -431,14 +492,14 @@ I’m eager to contribute my expertise to your team and help drive success with 
         .then(function (result) {
           if (result.ok && result.data && result.data.success) {
             form.reset();
-            showMessage(successEl, result.data.message || 'Thank you! Your message has been sent successfully.');
+            showFeedback(successEl, result.data.message || 'Thank you! Your message has been sent successfully.', 'success');
           } else {
             var errorText = (result.data && result.data.message) || 'Failed to send the message. Please try again later.';
-            showMessage(errorEl, errorText);
+            showFeedback(errorEl, errorText, 'error');
           }
         })
         .catch(function () {
-          showMessage(errorEl, 'Failed to send the message. Please try again later.');
+          showFeedback(errorEl, 'Failed to send the message. Please try again later.', 'error');
         })
         .finally(function () {
           if (submitBtn) {
