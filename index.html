@@ -376,45 +376,69 @@ I’m eager to contribute my expertise to your team and help drive success with 
   </section>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    var params = new URLSearchParams(window.location.search);
-    var status = params.get('status');
-    if (!status) {
+    var form = document.querySelector('.u-form form');
+    if (!form) {
       return;
     }
 
-    var successEl = document.querySelector('.u-form-send-success');
-    var errorEl = document.querySelector('.u-form-send-error');
+    var successEl = form.querySelector('.u-form-send-success');
+    var errorEl = form.querySelector('.u-form-send-error');
+    var submitBtn = form.querySelector('[type="submit"]');
 
-    if (successEl) {
-      successEl.style.display = 'none';
-    }
-    if (errorEl) {
-      errorEl.style.display = 'none';
-    }
-
-    switch (status) {
-      case 'success':
-        if (successEl) {
-          successEl.textContent = 'Thank you! Your message has been sent successfully.';
-          successEl.style.display = 'block';
-        }
-        break;
-      case 'invalid':
-        if (errorEl) {
-          errorEl.textContent = 'Please fill out the form correctly and try again.';
-          errorEl.style.display = 'block';
-        }
-        break;
-      default:
-        if (errorEl) {
-          errorEl.textContent = 'Failed to send the message. Please try again later.';
-          errorEl.style.display = 'block';
-        }
+    function hideMessages() {
+      if (successEl) successEl.style.display = 'none';
+      if (errorEl) errorEl.style.display = 'none';
     }
 
-    params.delete('status');
-    var cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-    window.history.replaceState({}, document.title, cleanUrl);
+    function showMessage(element, text) {
+      if (!element) return;
+      element.textContent = text;
+      element.style.display = 'block';
+    }
+
+    hideMessages();
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      hideMessages();
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+      }
+
+      var formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        body: formData
+      })
+        .then(function (response) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, data: data };
+          });
+        })
+        .then(function (result) {
+          if (result.ok && result.data && result.data.success) {
+            form.reset();
+            showMessage(successEl, result.data.message || 'Thank you! Your message has been sent successfully.');
+          } else {
+            var errorText = (result.data && result.data.message) || 'Failed to send the message. Please try again later.';
+            showMessage(errorEl, errorText);
+          }
+        })
+        .catch(function () {
+          showMessage(errorEl, 'Failed to send the message. Please try again later.');
+        })
+        .finally(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = submitBtn.dataset.originalText || 'Submit';
+          }
+        });
+    }, true);
   });
 </script>
 </body>
