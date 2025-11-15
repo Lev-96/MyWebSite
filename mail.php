@@ -39,8 +39,8 @@ try {
     $mail->SMTPAuth = true;
     $mail->Username = 'levonbakunts3@gmail.com';
     $mail->Password = 'fago gfkl muqh vfjg';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port = 465;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
     $mail->CharSet = 'UTF-8';
 
     $mail->setFrom('levonbakunts3@gmail.com', 'Website Form');
