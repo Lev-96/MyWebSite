@@ -1,10 +1,10 @@
 const nodemailer = require('nodemailer');
 
 const {
-  SMTP_HOST = 'smtp.yandex.com',
+  SMTP_HOST = 'smtp.gmail.com',
   SMTP_PORT = '587',
-  SMTP_USER = 'web.developer0101@yandex.com',
-  SMTP_PASS = 'arvrbpkxctevxhfx',
+  SMTP_USER = 'MyWebDevelopmentAgency',
+  SMTP_PASS = 'wryxgbkrkrgvswrj',
   SMTP_FROM_NAME = 'Web Development by Levon',
   CONTACT_RECIPIENT = 'levonbakunts96@gmail.com',
 } = process.env;
