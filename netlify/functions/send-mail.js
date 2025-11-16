@@ -1,10 +1,10 @@
 const nodemailer = require('nodemailer');
 
 const {
-  SMTP_HOST = 'sandbox.smtp.mailtrap.io',
-  SMTP_PORT = '2525',
-  SMTP_USER = '4e7e44be49a49d',
-  SMTP_PASS = 'c15abb0b28e005',
+  SMTP_HOST = 'smtp.gmail.com',
+  SMTP_PORT = '587',
+  SMTP_USER = 'levonbakunts96@gmail.com\n',
+  SMTP_PASS = 'wryxgbkrkrgvswrj',
   SMTP_FROM_NAME = 'Web Development Agency',
   CONTACT_RECIPIENT = 'levonbakunts96@gmail.com',
 } = process.env;
