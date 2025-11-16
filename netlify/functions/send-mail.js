@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 const {
     SMTP_HOST = 'sandbox.smtp.mailtrap.io',
     SMTP_PORT = '2525',
-    SMTP_USER = '4e7e44be49a49d',
-    SMTP_PASS = 'c15abb0b28e005',
+    SMTP_USER,
+    SMTP_PASS,
     SMTP_FROM_NAME = 'Web Development Agency',
     CONTACT_RECIPIENT = 'web.developer0101@ya.ru',
 } = process.env;
@@ -15,6 +15,11 @@ const RESPONSE_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// Validate SMTP credentials
+if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP credentials are missing. Please set SMTP_USER and SMTP_PASS environment variables.');
+}
+
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
@@ -23,6 +28,10 @@ const transporter = nodemailer.createTransport({
         user: SMTP_USER,
         pass: SMTP_PASS,
     },
+    // Add connection timeout and retry options
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 3,
 });
 
 const getServiceLabel = (service) => {
@@ -172,21 +181,50 @@ exports.handler = async (event) => {
             'Date': new Date().toUTCString(),
             'MIME-Version': '1.0',
         },
-        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
+        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST || 'mailtrap.io'}>`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
+        // Verify transporter configuration before sending
+        if (!SMTP_USER || !SMTP_PASS) {
+            throw new Error('SMTP credentials are not configured. Please set SMTP_USER and SMTP_PASS environment variables in Netlify.');
+        }
+
+        // Verify connection
+        await transporter.verify();
+        
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        
+        console.log('Email sent successfully:', info.messageId);
+        
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true }),
+            body: JSON.stringify({ success: true, messageId: info.messageId }),
         };
     } catch (error) {
+        console.error('Error sending email:', error);
+        
+        // Provide more helpful error messages
+        let errorMessage = error.message || 'Failed to send email';
+        
+        if (error.code === 'EAUTH') {
+            errorMessage = 'SMTP authentication failed. Please check your credentials.';
+        } else if (error.code === 'ECONNECTION') {
+            errorMessage = 'Could not connect to SMTP server. Please check your SMTP settings.';
+        } else if (error.code === 'ETIMEDOUT') {
+            errorMessage = 'SMTP connection timed out. Please try again later.';
+        }
+        
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: error.message }),
+            body: JSON.stringify({ 
+                success: false, 
+                message: errorMessage,
+                error: error.code || 'UNKNOWN_ERROR'
+            }),
         };
     }
 };

@@ -18,7 +18,12 @@ export function NotificationPopup({
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    console.log("NotificationPopup - isOpen changed:", isOpen, "type:", type, "message:", message);
+    console.log("🎯 NotificationPopup - Props changed:", { isOpen, type, message });
+    if (isOpen) {
+      console.log("✅ NotificationPopup is OPEN and should be visible!");
+    } else {
+      console.log("❌ NotificationPopup is CLOSED");
+    }
   }, [isOpen, type, message]);
 
   useEffect(() => {
@@ -26,11 +31,11 @@ export function NotificationPopup({
       // Сброс прогресса при открытии
       setProgress(100);
       
-      // Автоматическое закрытие через 4.5 секунд
-      const closeDelay = 4500; // 4.5 секунды
+      // Автоматическое закрытие через 5 секунд
+      const closeDelay = 5000; // 5 секунд
       const updateInterval = 50; // Обновляем каждые 50ms для плавности
-      const totalSteps = closeDelay / updateInterval; // 90 шагов
-      const stepDecrement = 100 / totalSteps; // ~1.11% за шаг
+      const totalSteps = closeDelay / updateInterval; // 100 шагов
+      const stepDecrement = 100 / totalSteps; // 1% за шаг
       
       const timer = setTimeout(() => {
         onClose();
@@ -53,22 +58,28 @@ export function NotificationPopup({
     }
   }, [isOpen, onClose]);
 
+  // Debug: логируем рендер
+  console.log("🎨 NotificationPopup rendering, isOpen:", isOpen, "type:", type, "message:", message);
+
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop с плавным появлением */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[99998]"
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            style={{ zIndex: 99998 }}
             onClick={onClose}
           />
 
           {/* Popup с улучшенной анимацией */}
           <motion.div
+            key="popup-content"
             initial={{ 
               opacity: 0, 
               scale: 0.7, 
@@ -84,7 +95,7 @@ export function NotificationPopup({
             exit={{ 
               opacity: 0, 
               scale: 0.8, 
-              y: -50,
+              y: -30,
               rotateX: 10
             }}
             transition={{
@@ -94,8 +105,11 @@ export function NotificationPopup({
               mass: 0.8,
               duration: 0.5,
             }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] w-[90%] max-w-md pointer-events-none"
-            style={{ perspective: "1000px" }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md pointer-events-auto"
+            style={{ 
+              zIndex: 99999,
+              transformStyle: "preserve-3d",
+            }}
           >
             <div className="pointer-events-auto">
               <div
