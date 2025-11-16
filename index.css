@@ -2589,6 +2589,13 @@ body.theme-dark .u-section-5,
     color: #1b1f23 !important;
 }
 
+/* Keep "Get in Touch" always black */
+.u-section-5 .u-layout-cell-1 .u-text-1,
+[data-theme="light"] .u-section-5 .u-layout-cell-1 .u-text-1,
+[data-theme="dark"] .u-section-5 .u-layout-cell-1 .u-text-1 {
+    color: #1b1f23 !important;
+}
+
 /* Dark theme - white text */
 [data-theme="dark"] .u-text-1,
 [data-theme="dark"] .u-text-2,
@@ -2598,6 +2605,28 @@ body.theme-dark .u-section-5,
 [data-theme="dark"] .u-section-3 .u-text-1 {
     color: #f8fafc !important;
     transition: color 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Keep "Let's create something great" and "Contact" always white */
+.u-footer .u-text-1,
+.u-footer .u-text-2,
+.u-footer .u-text-default.u-text-1,
+.u-footer .u-text-default.u-text-2,
+.u-footer .u-text-palette-1-base.u-text-1,
+.u-footer .u-text-palette-1-base.u-text-2,
+[data-theme="light"] .u-footer .u-text-1,
+[data-theme="light"] .u-footer .u-text-2,
+[data-theme="light"] .u-footer .u-text-default.u-text-1,
+[data-theme="light"] .u-footer .u-text-default.u-text-2,
+[data-theme="light"] .u-footer .u-text-palette-1-base.u-text-1,
+[data-theme="light"] .u-footer .u-text-palette-1-base.u-text-2,
+[data-theme="dark"] .u-footer .u-text-1,
+[data-theme="dark"] .u-footer .u-text-2,
+[data-theme="dark"] .u-footer .u-text-default.u-text-1,
+[data-theme="dark"] .u-footer .u-text-default.u-text-2,
+[data-theme="dark"] .u-footer .u-text-palette-1-base.u-text-1,
+[data-theme="dark"] .u-footer .u-text-palette-1-base.u-text-2 {
+    color: #ffffff !important;
 }
 
 /* Navigation links - specific targeting via href */
