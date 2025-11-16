@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Moon, Sun, Menu, X } from 'lucide-react';
-import { Button } from './ui/button';
+import { useState } from "react";
+import { Moon, Sun, Menu, X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface NavigationProps {
   isDark: boolean;
@@ -13,26 +13,29 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
       setIsMenuOpen(false);
     }
   };
 
   const menuItems = [
-    { label: 'Home', id: 'hero' },
-    { label: 'About', id: 'about' },
-    { label: 'Skills', id: 'skills' },
-    { label: 'Portfolio', id: 'portfolio' },
-    { label: 'Services', id: 'services' },
-    { label: 'Contact', id: 'contact' },
+    { label: "Home", id: "hero" },
+    { label: "About", id: "about" },
+    { label: "Skills", id: "skills" },
+    { label: "Portfolio", id: "portfolio" },
+    { label: "Services", id: "services" },
+    { label: "Contact", id: "contact" },
   ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-[#0d0f16]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="text-[#6c93ec] cursor-pointer" onClick={() => scrollToSection('hero')}>
-            {'<Dev />'}
+          <div
+            className="text-[#6c93ec] cursor-pointer"
+            onClick={() => scrollToSection("hero")}
+          >
+            {"<Dev />"}
           </div>
 
           {/* Desktop Menu */}
@@ -52,7 +55,11 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
               onClick={() => setIsDark(!isDark)}
               className="ml-4"
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDark ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
           </div>
 
@@ -63,35 +70,52 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
               size="icon"
               onClick={() => setIsDark(!isDark)}
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDark ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-[#0d0f16] border-t border-gray-200 dark:border-gray-800">
-          <div className="px-4 py-4 space-y-3">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#6c93ec] dark:hover:text-[#6c93ec] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+      <div
+        style={{
+          willChange: "max-height, opacity",
+          maxHeight: isMenuOpen ? "24rem" : "0",
+          opacity: isMenuOpen ? 1 : 0,
+          pointerEvents: isMenuOpen ? "auto" : "none",
+          transition:
+            "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+        className="md:hidden bg-white dark:bg-[#0d0f16] border-t border-gray-200 dark:border-gray-800 overflow-hidden"
+        aria-hidden={!isMenuOpen}
+      >
+        <div className="px-4 py-4 space-y-3">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => scrollToSection(item.id)}
+              className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#6c93ec] dark:hover:text-[#6c93ec] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
     </nav>
   );
 }

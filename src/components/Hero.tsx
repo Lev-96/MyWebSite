@@ -1,7 +1,7 @@
-import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { motion, useScroll, useTransform } from "motion/react";
+import { ArrowRight } from "lucide-react";
+import { Button } from "./ui/button";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 export function Hero() {
   const { scrollY } = useScroll();
@@ -9,16 +9,16 @@ export function Hero() {
   const y2 = useTransform(scrollY, [0, 300], [0, -30]);
 
   const scrollToContact = () => {
-    const element = document.getElementById('contact');
+    const element = document.getElementById("contact");
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   const scrollToPortfolio = () => {
-    const element = document.getElementById('portfolio');
+    const element = document.getElementById("portfolio");
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -36,7 +36,7 @@ export function Hero() {
         style={{ y: y2 }}
         className="absolute bottom-20 left-10 w-96 h-96 bg-[#6c93ec]/5 dark:bg-[#6c93ec]/10 rounded-full blur-3xl"
       />
-      
+
       {/* Geometric Accent Lines */}
       <div className="absolute top-1/4 left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-[#6c93ec]/20 to-transparent" />
       <div className="absolute bottom-1/3 right-0 w-1/2 h-px bg-gradient-to-l from-transparent via-[#6c93ec]/20 to-transparent" />
@@ -54,9 +54,12 @@ export function Hero() {
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-br from-[#6c93ec] to-[#4a6bb8] rounded-full blur-xl opacity-30" />
               <ImageWithFallback
-                src="/img/myphoto"
+                style={{
+                  objectPosition: "top",
+                }}
+                src="/img/myphoto.jpg"
                 alt="Developer Avatar"
-                className="relative w-64 h-64 sm:w-80 sm:h-80 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-2xl"
+                className="relative w-64 h-64 sm:w-80 sm:h-80 object-cover object-top object-center rounded-full border-4 border-white dark:border-gray-800 shadow-2xl"
               />
             </div>
 
@@ -80,13 +83,14 @@ export function Hero() {
           >
             {/* Main Headline */}
             <h2 className="text-4xl sm:text-5xl lg:text-6xl text-gray-900 dark:text-white tracking-tight leading-tight">
-              Crafting scalable{' '}
+              Crafting scalable{" "}
               <span className="text-[#6c93ec]">digital experiences</span>.
             </h2>
 
             {/* Subheadline */}
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl">
-              I build fast, reliable, and user-focused applications from backend to frontend.
+              I build fast, reliable, and user-focused applications from backend
+              to frontend.
             </p>
 
             {/* CTAs */}

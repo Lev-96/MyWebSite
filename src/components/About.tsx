@@ -45,8 +45,7 @@ export function About() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-              Full-stack developer with 5 years of experience in office and freelance work,
-              building scalable backend systems and modern frontend applications.
+            Experienced full-stack developer with 5 years in office and freelance work on Upwork and Fiverr. I build scalable backend systems and polished frontend experiences, combining clean engineering with a focus on reliable, user-centered solutions.
             </p>
 
             <div className="mb-8">
