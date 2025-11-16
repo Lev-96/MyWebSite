@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   // 🔑 This is the most crucial part for class generation
   content: [
     "./index.html",
