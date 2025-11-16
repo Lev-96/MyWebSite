@@ -5,7 +5,7 @@ const {
   SMTP_PORT = '587',
   SMTP_USER = 'levonbakunts96@gmail.com',
   SMTP_PASS = 'wryxgbkrkrgvswrj',
-  SMTP_FROM_NAME = 'Web Development Agency',
+  SMTP_FROM_NAME = 'Web Development by Levon',
   CONTACT_RECIPIENT = 'levonbakunts96@gmail.com',
 } = process.env;
 
@@ -18,17 +18,15 @@ const RESPONSE_HEADERS = {
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports
-    requireTLS: Number(SMTP_PORT) === 587, // Gmail requires TLS on port 587
+    secure: Number(SMTP_PORT) === 465,
+    requireTLS: Number(SMTP_PORT) === 587,
     auth: {
-        user: SMTP_USER.trim(), // Убираем лишние пробелы и переносы строк
+        user: SMTP_USER.trim(),
         pass: SMTP_PASS.trim(),
     },
     tls: {
-        // Не отклонять недействительные сертификаты (для разработки)
         rejectUnauthorized: false
     },
-    // Настройки для правильного форматирования multipart писем
     pool: true,
     maxConnections: 1,
     maxMessages: 1,
@@ -286,12 +284,11 @@ exports.handler = async (event) => {
     // === 1. Письмо администратору ===
     const adminMailOptions = {
         from: `"${SMTP_FROM_NAME}" <${fromEmail}>`,
-        to: CONTACT_RECIPIENT,
+        to: email,
         replyTo: `${name} <${email}>`,
         subject: `New Contact Form Message from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
         html: buildHtmlBody({ name, email, message, service }),
-        // Минимальные заголовки для лучшей доставляемости
         headers: {
             'Date': new Date().toUTCString(),
             'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
