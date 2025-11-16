@@ -18,6 +18,10 @@ export function NotificationPopup({
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
+    console.log("NotificationPopup - isOpen changed:", isOpen, "type:", type, "message:", message);
+  }, [isOpen, type, message]);
+
+  useEffect(() => {
     if (isOpen) {
       // Сброс прогресса при открытии
       setProgress(100);
@@ -54,7 +58,7 @@ export function NotificationPopup({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9998]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[99998]"
             onClick={onClose}
           />
 
@@ -85,7 +89,7 @@ export function NotificationPopup({
               mass: 0.8,
               duration: 0.5,
             }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[90%] max-w-md pointer-events-none"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] w-[90%] max-w-md pointer-events-none"
             style={{ perspective: "1000px" }}
           >
             <div className="pointer-events-auto">

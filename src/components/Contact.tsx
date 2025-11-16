@@ -148,22 +148,36 @@ export function Contact() {
 
       let data;
       try {
-        const text = await response.text();
-        if (!text) {
-          throw new Error("Empty response from server");
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          if (!text) {
+            throw new Error("Empty response from server");
+          }
+          try {
+            data = JSON.parse(text);
+          } catch {
+            throw new Error(text || "Server returned invalid response");
+          }
         }
-        data = JSON.parse(text);
-      } catch (parseError) {
-        // Если ответ не JSON, создаем объект с текстом ответа
+      } catch (parseError: any) {
         console.error("Failed to parse response:", parseError);
-        throw new Error("Server returned invalid response. Please try again later.");
+        throw new Error(parseError.message || "Server returned invalid response. Please try again later.");
       }
 
-      if (response.ok && data.success !== false) {
+      console.log("Response data:", data); // Debug log
+      console.log("Response status:", response.status, response.ok); // Debug log
+
+      if (response.ok && (data.success === true || data.success === undefined)) {
+        console.log("Success! Showing popup..."); // Debug log
+        const successMessage = data.message || "Message sent successfully! I'll get back to you soon.";
+        console.log("Setting notification:", { isOpen: true, type: "success", message: successMessage });
         setNotification({
           isOpen: true,
           type: "success",
-          message: "Message sent successfully! I'll get back to you soon.",
+          message: successMessage,
         });
         setFormData({ name: "", email: "", message: "", service: "" });
       } else {
@@ -193,10 +207,11 @@ export function Contact() {
       }
       
       // Если это ошибка сети
-      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed to fetch')) {
         errorMessage = "Network error. Please check your internet connection and try again.";
       }
       
+      console.log("Showing error popup:", errorMessage); // Debug log
       setNotification({
         isOpen: true,
         type: "error",

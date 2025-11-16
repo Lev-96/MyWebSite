@@ -349,6 +349,14 @@ exports.handler = async (event) => {
     subject: `New Contact Form Message from ${name}`,
     text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
     html: buildHtmlBody({ name, email, message, service }),
+    // Headers to reduce spam score
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'high',
+    },
+    // Message ID для лучшей доставляемости
+    messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
   };
 
   // Confirmation email to sender
@@ -358,6 +366,14 @@ exports.handler = async (event) => {
     subject: 'Thank you for contacting us!',
     text: `Hi ${name || 'there'}!\n\nThanks for reaching out. We received your message and will get back to you shortly.\n\nYour message:\n${message}\n\nBest regards,\n${SMTP_FROM_NAME}`,
     html: buildConfirmationHtml({ name, message, success: true }),
+    // Headers to reduce spam score
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'high',
+    },
+    // Message ID для лучшей доставляемости
+    messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
   };
 
   try {
