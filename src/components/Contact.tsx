@@ -1,6 +1,6 @@
+import React, { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { useInView } from "motion/react";
-import { useRef, useState } from "react";
 import { Github, Linkedin, Phone } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { toast } from "sonner@2.0.3";
+import { NotificationPopup } from "./NotificationPopup";
 
 export function Contact() {
   const ref = useRef(null);
@@ -23,6 +23,16 @@ export function Contact() {
     email: "",
     message: "",
     service: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({
+    isOpen: false,
+    type: "success",
+    message: "",
   });
 
   const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -38,8 +48,7 @@ export function Contact() {
       <path d="M12 0C5.372 0 .001 5.372.001 12c0 6.627 5.371 12 11.999 12 6.628 0 12-5.373 12-12C24 5.372 18.628 0 12 0zm5.535 7.57l-1.806 8.53c-.137.593-.495.738-1 .46l-2.77-2.043-1.337 1.29c-.148.147-.274.272-.563.272l.201-2.843 5.175-4.69c.225-.198-.05-.309-.35-.11l-6.401 4.025-2.755-.86c-.597-.185-.607-.597.124-.825l10.764-3.305c.5-.146.938.12.779.814z" />
     </svg>
   );
-  // Discord brand color is #5865F2
-  // From SVG Repo - Discord icon
+
   const DiscordIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       width="1em"
@@ -61,8 +70,6 @@ export function Contact() {
     </svg>
   );
 
-  // WhatsApp brand color is #25D366
-  // From SVG Repo - WhatsApp icon
   const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       width="1em"
@@ -81,6 +88,7 @@ export function Contact() {
       </g>
     </svg>
   );
+
   const socialLinks = [
     {
       name: "GitHub",
@@ -94,7 +102,6 @@ export function Contact() {
       url: "https://www.linkedin.com/in/levon-bakunts-406816218/",
       color: "#0A66C2",
     },
-
     {
       name: "Discord",
       icon: DiscordIcon,
@@ -115,168 +122,214 @@ export function Contact() {
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Message sent successfully! I'll get back to you soon.");
-    setFormData({ name: "", email: "", message: "", service: "" });
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/.netlify/functions/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNotification({
+          isOpen: true,
+          type: "success",
+          message: "Message sent successfully! I'll get back to you soon.",
+        });
+        setFormData({ name: "", email: "", message: "", service: "" });
+      } else {
+        throw new Error(data.error || "Failed to send message");
+      }
+    } catch (error: any) {
+      setNotification({
+        isOpen: true,
+        type: "error",
+        message: error.message || "Something went wrong. Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <section
-      id="contact"
-      ref={ref}
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-[#0d0f16]"
-    >
-      <div className="max-w-7xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 text-gray-900 dark:text-white"
-        >
-          Contact Me
-        </motion.h2>
-
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
+    <>
+      <section
+        id="contact"
+        ref={ref}
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-[#0d0f16]"
+      >
+        <div className="max-w-7xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 text-gray-900 dark:text-white"
           >
-            <h3 className="text-gray-900 dark:text-white mb-6">Get In Touch</h3>
+            Contact Me
+          </motion.h2>
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                <Phone className="w-5 h-5 text-[#6c93ec]" />
-                <span>+374 (33) 733-633</span>
-              </div>
+          <div className="grid md:grid-cols-2 gap-12">
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h3 className="text-gray-900 dark:text-white mb-6">Get In Touch</h3>
 
-              <div>
-                <h4 className="text-gray-900 dark:text-white mb-4">
-                  Connect With Me
-                </h4>
-                <div className="grid grid-cols-2  gap-4">
-                  {socialLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <a
-                        key={link.name}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#6c93ec] hover:shadow-md transition-all"
-                      >
-                        <Icon
-                          className="w-5 h-5"
-                          style={{ color: link.color }}
-                        />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {link.name}
-                        </span>
-                      </a>
-                    );
-                  })}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                  <Phone className="w-5 h-5 text-[#6c93ec]" />
+                  <span>+374 (33) 733-633</span>
+                </div>
+
+                <div>
+                  <h4 className="text-gray-900 dark:text-white mb-4">
+                    Connect With Me
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {socialLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <a
+                          key={link.name}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#6c93ec] hover:shadow-md transition-all"
+                        >
+                          <Icon
+                            className="w-5 h-5"
+                            style={{ color: link.color }}
+                          />
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {link.name}
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Card className="p-6 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                    Name
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Your name"
-                    required
-                    className="border-gray-300 dark:border-gray-600"
-                  />
-                </div>
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Card className="p-6 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                      Name
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Your name"
+                      required
+                      disabled={isSubmitting}
+                      className="border-gray-300 dark:border-gray-600"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    placeholder="your.email@example.com"
-                    required
-                    className="border-gray-300 dark:border-gray-600"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                      Email
+                    </label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      placeholder="your.email@example.com"
+                      required
+                      disabled={isSubmitting}
+                      className="border-gray-300 dark:border-gray-600"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                    Service (Optional)
-                  </label>
-                  <Select
-                    value={formData.service}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, service: value })
-                    }
+                  <div>
+                    <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                      Service (Optional)
+                    </label>
+                    <Select
+                      value={formData.service}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, service: value })
+                      }
+                      disabled={isSubmitting}
+                    >
+                      <SelectTrigger className="border-gray-300 dark:border-gray-600">
+                        <SelectValue placeholder="Select a service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="backend">
+                          Backend Development
+                        </SelectItem>
+                        <SelectItem value="frontend">
+                          Frontend Development
+                        </SelectItem>
+                        <SelectItem value="uiux">UI/UX Design</SelectItem>
+                        <SelectItem value="fullstack">
+                          Full-Stack Development
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                      Message
+                    </label>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                      placeholder="Tell me about your project..."
+                      required
+                      rows={5}
+                      disabled={isSubmitting}
+                      className="border-gray-300 dark:border-gray-600"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#6c93ec] hover:bg-[#5a7fdb] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <SelectTrigger className="border-gray-300 dark:border-gray-600">
-                      <SelectValue placeholder="Select a service" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="backend">
-                        Backend Development
-                      </SelectItem>
-                      <SelectItem value="frontend">
-                        Frontend Development
-                      </SelectItem>
-                      <SelectItem value="uiux">UI/UX Design</SelectItem>
-                      <SelectItem value="fullstack">
-                        Full-Stack Development
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                    Message
-                  </label>
-                  <Textarea
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    placeholder="Tell me about your project..."
-                    required
-                    rows={5}
-                    className="border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-[#6c93ec] hover:bg-[#5a7fdb] text-white"
-                >
-                  Send Message
-                </Button>
-              </form>
-            </Card>
-          </motion.div>
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </Button>
+                </form>
+              </Card>
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <NotificationPopup
+        isOpen={notification.isOpen}
+        type={notification.type}
+        message={notification.message}
+        onClose={() =>
+          setNotification({ ...notification, isOpen: false })
+        }
+      />
+    </>
   );
 }

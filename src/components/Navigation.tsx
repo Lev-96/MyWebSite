@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Moon, Sun, Menu, X } from "lucide-react";
+import { motion } from "motion/react";
 import { Button } from "./ui/button";
 
 interface NavigationProps {
@@ -92,30 +93,56 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
       </div>
 
       {/* Mobile Menu */}
-      <div
-        style={{
-          willChange: "max-height, opacity",
-          maxHeight: isMenuOpen ? "24rem" : "0",
+      <motion.div
+        initial={false}
+        animate={{
+          height: isMenuOpen ? "auto" : 0,
           opacity: isMenuOpen ? 1 : 0,
-          pointerEvents: isMenuOpen ? "auto" : "none",
-          transition:
-            "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
-        className="md:hidden bg-white dark:bg-[#0d0f16] border-t border-gray-200 dark:border-gray-800 overflow-hidden"
+        transition={{
+          duration: 0.4,
+          ease: [0.4, 0, 0.2, 1], // cubic-bezier для плавности
+        }}
+        style={{
+          overflow: "hidden",
+          pointerEvents: isMenuOpen ? "auto" : "none",
+        }}
+        className="md:hidden bg-white dark:bg-[#0d0f16] border-t border-gray-200 dark:border-gray-800"
         aria-hidden={!isMenuOpen}
       >
-        <div className="px-4 py-4 space-y-3">
-          {menuItems.map((item) => (
-            <button
+        <motion.div
+          initial={false}
+          animate={{
+            y: isMenuOpen ? 0 : -20,
+          }}
+          transition={{
+            duration: 0.4,
+            ease: [0.4, 0, 0.2, 1],
+            delay: isMenuOpen ? 0.1 : 0,
+          }}
+          className="px-4 py-4 space-y-3"
+        >
+          {menuItems.map((item, index) => (
+            <motion.button
               key={item.id}
+              initial={false}
+              animate={{
+                opacity: isMenuOpen ? 1 : 0,
+                x: isMenuOpen ? 0 : -20,
+              }}
+              transition={{
+                duration: 0.3,
+                delay: isMenuOpen ? 0.15 + index * 0.05 : 0,
+                ease: [0.4, 0, 0.2, 1],
+              }}
               onClick={() => scrollToSection(item.id)}
               className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#6c93ec] dark:hover:text-[#6c93ec] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               {item.label}
-            </button>
+            </motion.button>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </nav>
   );
 }
