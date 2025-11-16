@@ -1,10 +1,10 @@
 const nodemailer = require('nodemailer');
 
 const {
-    SMTP_HOST = 'smtp.yandex.ru',
-    SMTP_PORT = '465',
-    SMTP_USER = 'web.developer0101@ya.ru',
-    SMTP_PASS = 'arvrbpkxctevxhfx',
+    SMTP_HOST = 'sandbox.smtp.mailtrap.io',
+    SMTP_PORT = '2525',
+    SMTP_USER = '4e7e44be49a49d',
+    SMTP_PASS = 'c15abb0b28e005',
     SMTP_FROM_NAME = 'Web Development Agency',
     CONTACT_RECIPIENT = 'web.developer0101@ya.ru',
 } = process.env;
