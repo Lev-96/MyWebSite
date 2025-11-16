@@ -9,13 +9,32 @@ import { Contact } from './components/Contact';
 import { Toaster } from './components/ui/sonner';
 
 export default function App() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('theme');
+    let initialDark = true;
+    if (saved === 'dark' || saved === 'light') {
+      initialDark = saved === 'dark';
+    } else {
+      initialDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    const root = document.documentElement;
+    if (initialDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    return initialDark;
+  });
 
   useEffect(() => {
+    const root = document.documentElement;
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
   }, [isDark]);
 
