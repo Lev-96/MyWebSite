@@ -11,7 +11,7 @@ async function testEmailFunction() {
     console.log('🧪 Testing email function...');
     console.log('📤 Sending test data:', testData);
     
-    const response = await fetch('http://localhost:8888/.netlify/functions/send-email', {
+    const response = await fetch('http://localhost:8888/.netlify/functions/send-mail', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

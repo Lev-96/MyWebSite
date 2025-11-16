@@ -135,8 +135,8 @@ export function Contact() {
       const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const functionUrl = 
         isDev 
-          ? "http://localhost:8888/.netlify/functions/send-email"
-          : "/.netlify/functions/send-email";
+          ? "http://localhost:8888/.netlify/functions/send-mail"
+          : "/.netlify/functions/send-mail";
 
       const response = await fetch(functionUrl, {
         method: "POST",
@@ -148,11 +148,15 @@ export function Contact() {
 
       let data;
       try {
-        data = await response.json();
+        const text = await response.text();
+        if (!text) {
+          throw new Error("Empty response from server");
+        }
+        data = JSON.parse(text);
       } catch (parseError) {
         // Если ответ не JSON, создаем объект с текстом ответа
-        const text = await response.text();
-        throw new Error(text || "Failed to parse response");
+        console.error("Failed to parse response:", parseError);
+        throw new Error("Server returned invalid response. Please try again later.");
       }
 
       if (response.ok && data.success !== false) {
@@ -163,14 +167,40 @@ export function Contact() {
         });
         setFormData({ name: "", email: "", message: "", service: "" });
       } else {
-        throw new Error(data.error || data.message || "Failed to send message");
+        // Формируем понятное сообщение об ошибке
+        let errorMsg = data.error || data.message || "Failed to send message";
+        
+        // Добавляем детали если они есть
+        if (data.details) {
+          if (data.details.includes("API key")) {
+            errorMsg = "Email service configuration error. Please contact the website administrator.";
+          } else if (data.details.includes("Domain")) {
+            errorMsg = "Email domain not verified. Please contact the website administrator.";
+          } else {
+            errorMsg = `${errorMsg}: ${data.details}`;
+          }
+        }
+        
+        throw new Error(errorMsg);
       }
     } catch (error: any) {
       console.error("Error sending message:", error);
+      
+      // Парсим детали ошибки если они есть
+      let errorMessage = "Something went wrong. Please try again later.";
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Если это ошибка сети
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      }
+      
       setNotification({
         isOpen: true,
         type: "error",
-        message: error.message || "Something went wrong. Please try again later.",
+        message: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
