@@ -27,7 +27,6 @@ export function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center pt-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white dark:from-[#0a0a0a] dark:to-[#1a1a1a] overflow-hidden"
     >
-      {/* Background Decorative Elements */}
       <motion.div
         style={{ y: y1 }}
         className="absolute top-20 right-10 w-72 h-72 bg-[#6c93ec]/5 dark:bg-[#6c93ec]/10 rounded-full blur-3xl"
@@ -37,20 +36,17 @@ export function Hero() {
         className="absolute bottom-20 left-10 w-96 h-96 bg-[#6c93ec]/5 dark:bg-[#6c93ec]/10 rounded-full blur-3xl"
       />
 
-      {/* Geometric Accent Lines */}
       <div className="absolute top-1/4 left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-[#6c93ec]/20 to-transparent" />
       <div className="absolute bottom-1/3 right-0 w-1/2 h-px bg-gradient-to-l from-transparent via-[#6c93ec]/20 to-transparent" />
 
       <div className="relative max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Left Side - Avatar, Name, Profession */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col items-center"
           >
-            {/* Avatar */}
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-br from-[#6c93ec] to-[#4a6bb8] rounded-full blur-xl opacity-30" />
               <ImageWithFallback
@@ -63,7 +59,6 @@ export function Hero() {
               />
             </div>
 
-            {/* Name and Profession */}
             <div className="text-center">
               <h1 className="text-gray-900 dark:text-white mb-3 tracking-tight">
                 Levon Bakunts
@@ -74,26 +69,22 @@ export function Hero() {
             </div>
           </motion.div>
 
-          {/* Right Side - Headline, Subheadline, CTAs */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="flex flex-col justify-center text-center lg:text-left space-y-8"
           >
-            {/* Main Headline */}
             <h2 className="text-4xl sm:text-5xl lg:text-6xl text-gray-900 dark:text-white tracking-tight leading-tight">
               Crafting scalable{" "}
               <span className="text-[#6c93ec]">digital experiences</span>.
             </h2>
 
-            {/* Subheadline */}
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl">
               I build fast, reliable, and user-focused applications from backend
               to frontend.
             </p>
 
-            {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start">
               <motion.div
                 whileHover={{ scale: 1.03 }}

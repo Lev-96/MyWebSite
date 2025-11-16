@@ -39,7 +39,6 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
             {"<Dev />"}
           </div>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             {menuItems.map((item) => (
               <button
@@ -64,7 +63,6 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             <Button
               variant="ghost"
@@ -92,7 +90,6 @@ export function Navigation({ isDark, setIsDark }: NavigationProps) {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <motion.div
         initial={false}
         animate={{

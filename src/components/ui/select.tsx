@@ -10,7 +10,6 @@ import {
 
 import { cn } from "./utils";
 
-// Util: lock/unlock body pointer events
 function setBodyPointerEvents(lock: boolean) {
   if (typeof document !== "undefined" && document.body) {
     document.body.style.pointerEvents = lock ? "none" : "";
@@ -20,7 +19,6 @@ function setBodyPointerEvents(lock: boolean) {
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  // Keep track of open/close for pointer events on body
   const handleOpenChange = React.useCallback(
     (open: boolean) => {
       setBodyPointerEvents(open);
@@ -31,7 +29,6 @@ function Select({
     [props]
   );
 
-  // Wrap the component to ensure body pointer events always restore
   React.useEffect(() => {
     return () => {
       setBodyPointerEvents(false);
@@ -91,8 +88,6 @@ function SelectContent({
   position = "popper",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
-  // On mount: pointer-events already set by Select (root) via open state
-  // On unmount: unlock body pointer events
   React.useEffect(() => {
     return () => {
       setBodyPointerEvents(false);

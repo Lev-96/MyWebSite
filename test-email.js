@@ -1,4 +1,3 @@
-// Тестовый скрипт для проверки функции отправки email
 const testData = {
   name: "Test User",
   email: "test@example.com",

@@ -28,20 +28,17 @@ export function NotificationPopup({
 
   useEffect(() => {
     if (isOpen) {
-      // Сброс прогресса при открытии
       setProgress(100);
       
-      // Автоматическое закрытие через 5 секунд
-      const closeDelay = 5000; // 5 секунд
-      const updateInterval = 50; // Обновляем каждые 50ms для плавности
-      const totalSteps = closeDelay / updateInterval; // 100 шагов
-      const stepDecrement = 100 / totalSteps; // 1% за шаг
+      const closeDelay = 5000;
+      const updateInterval = 50;
+      const totalSteps = closeDelay / updateInterval;
+      const stepDecrement = 100 / totalSteps;
       
       const timer = setTimeout(() => {
         onClose();
       }, closeDelay);
 
-      // Анимация прогресс-бара (синхронизирована с таймером закрытия)
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
           const newProgress = prev - stepDecrement;
@@ -58,14 +55,12 @@ export function NotificationPopup({
     }
   }, [isOpen, onClose]);
 
-  // Debug: логируем рендер
   console.log("🎨 NotificationPopup rendering, isOpen:", isOpen, "type:", type, "message:", message);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop с плавным появлением */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -77,7 +72,6 @@ export function NotificationPopup({
             onClick={onClose}
           />
 
-          {/* Popup с улучшенной анимацией */}
           <motion.div
             key="popup-content"
             initial={{ 
@@ -124,7 +118,6 @@ export function NotificationPopup({
                     : "0 20px 60px rgba(239, 68, 68, 0.3), 0 0 40px rgba(239, 68, 68, 0.1)",
                 }}
               >
-                {/* Анимированный градиентный фон */}
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -136,7 +129,6 @@ export function NotificationPopup({
                   }`}
                 />
 
-                {/* Декоративные частицы для успеха */}
                 {type === "success" && (
                   <>
                     <motion.div
@@ -163,10 +155,8 @@ export function NotificationPopup({
                   </>
                 )}
 
-                {/* Content */}
                 <div className="relative p-6">
                   <div className="flex items-start gap-4">
-                    {/* Иконка с улучшенной анимацией */}
                     <motion.div
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
@@ -201,7 +191,6 @@ export function NotificationPopup({
                       )}
                     </motion.div>
 
-                    {/* Message */}
                     <div className="flex-1 pt-1">
                       <motion.h3
                         initial={{ opacity: 0, y: -10 }}
@@ -232,7 +221,6 @@ export function NotificationPopup({
                       </motion.p>
                     </div>
 
-                    {/* Close button с улучшенной анимацией */}
                     <motion.button
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -248,7 +236,6 @@ export function NotificationPopup({
                   </div>
                 </div>
 
-                {/* Анимированный прогресс-бар */}
                 <div className="relative h-1.5 bg-gray-200/50 dark:bg-gray-700/50 overflow-hidden">
                   <motion.div
                     initial={{ width: "100%" }}

@@ -35,7 +35,6 @@ export function Contact() {
     message: "",
   });
 
-  // Debug: отслеживаем изменения notification
   useEffect(() => {
     console.log("📊 Notification state changed:", notification);
     if (notification.isOpen) {
@@ -134,12 +133,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsSubmitting(true);
 
-  // Close previous notification
   if (notification.isOpen) {
     setNotification({ isOpen: false, type: "", message: "" });
   }
 
-  // Determine function URL based on environment
   const isDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const functionUrl = isDev
     ? "http://localhost:3000/.netlify/functions/send-mail"
@@ -152,7 +149,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       body: JSON.stringify(formData),
     });
 
-    // Parse response safely
     let data: any;
     const contentType = response.headers.get("content-type");
 
@@ -168,20 +164,16 @@ const handleSubmit = async (e: React.FormEvent) => {
       }
     }
 
-    // Success path
     if (response.ok) {
       const successMessage = data.message || "Message sent successfully! I'll get back to you soon.";
 
-      // Clear form
       setFormData({ name: "", email: "", message: "", service: "" });
 
-      // Show notification with small delay for animation
       setTimeout(() => {
         setNotification({ isOpen: true, type: "success", message: successMessage });
       }, 50);
 
     } else {
-      // Handle server error response
       let errorMsg = data.error || data.message || "Failed to send message";
 
       if (data.details) {
@@ -194,7 +186,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     }
 
   } catch (error: any) {
-    // Network error detection
     const isNetworkError = (err: any) =>
       err.message?.includes("fetch") ||
       err.message?.includes("network") ||
@@ -229,7 +220,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           </motion.h2>
 
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Info */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -273,7 +263,6 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
             </motion.div>
 
-            {/* Contact Form */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
