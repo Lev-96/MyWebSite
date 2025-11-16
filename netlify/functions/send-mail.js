@@ -180,13 +180,16 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true }),
+            body: JSON.stringify({
+                success: true,
+                message: 'Your message has been successfully sent. We will get back to you shortly.',
+            }),
         };
     } catch (error) {
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: error.message }),
+            body: JSON.stringify({ success: false, message: 'Error sending email. Please try again later.' }),
         };
     }
 };
