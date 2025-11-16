@@ -129,6 +129,59 @@ const buildHtmlBody = ({ name, email, message, service }) => `
   </html>
 `;
 
+const buildConfirmationEmail = ({ name, email }) => `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Thank you for contacting us!</title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+            <!-- Green Banner Header -->
+            <tr>
+              <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 40px 30px; text-align: center;">
+                <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">Thank You, ${name}!</h1>
+              </td>
+            </tr>
+            
+            <!-- Content -->
+            <tr>
+              <td style="padding: 40px 30px;">
+                <p style="margin: 0 0 20px 0; color: #1e293b; font-size: 16px; line-height: 1.6;">
+                  Hi ${name},
+                </p>
+                
+                <p style="margin: 0 0 20px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                  We have received your message and will get back to you within <strong style="color: #1e293b;">24 hours</strong>.
+                </p>
+                
+                <p style="margin: 0 0 30px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                  Thank you for your interest in our services!
+                </p>
+                
+                <p style="margin: 0 0 10px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                  Best regards,
+                </p>
+                
+                <p style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 600;">
+                  ${SMTP_FROM_NAME}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+`;
+
 const sanitize = (value = '') =>
     String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
 
@@ -202,15 +255,39 @@ exports.handler = async (event) => {
         await transporter.verify();
         console.log('SMTP connection verified successfully');
         
-        // Send email
-        const info = await transporter.sendMail(mailOptions);
+        // Send email to admin (notification about new contact form submission)
+        const adminInfo = await transporter.sendMail(mailOptions);
+        console.log('Admin notification sent successfully:', adminInfo.messageId);
         
-        console.log('Email sent successfully:', info.messageId);
+        // Send confirmation email to client
+        const confirmationOptions = {
+            from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`,
+            to: email, // Send to the client who submitted the form
+            subject: 'Thank you for contacting us!',
+            text: `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`,
+            html: buildConfirmationEmail({ name, email }),
+            headers: {
+                'X-Priority': '1',
+                'X-MSMail-Priority': 'High',
+                'Importance': 'high',
+                'X-Mailer': 'NodeMailer',
+                'Date': new Date().toUTCString(),
+                'MIME-Version': '1.0',
+            },
+            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST || 'mailtrap.io'}>`,
+        };
+        
+        const confirmationInfo = await transporter.sendMail(confirmationOptions);
+        console.log('Client confirmation sent successfully:', confirmationInfo.messageId);
         
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true, messageId: info.messageId }),
+            body: JSON.stringify({ 
+                success: true, 
+                messageId: adminInfo.messageId,
+                confirmationId: confirmationInfo.messageId
+            }),
         };
     } catch (error) {
         console.error('Error sending email:', error);
