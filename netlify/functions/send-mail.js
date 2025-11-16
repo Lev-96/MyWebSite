@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 const {
     SMTP_HOST = 'sandbox.smtp.mailtrap.io',
     SMTP_PORT = '2525',
-    SMTP_USER,
-    SMTP_PASS,
+    SMTP_USER = '4e7e44be49a49d',
+    SMTP_PASS = 'c15abb0b28e005',
     SMTP_FROM_NAME = 'Web Development Agency',
     CONTACT_RECIPIENT = 'web.developer0101@ya.ru',
 } = process.env;
@@ -15,23 +15,30 @@ const RESPONSE_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// Validate SMTP credentials
-if (!SMTP_USER || !SMTP_PASS) {
-    console.error('SMTP credentials are missing. Please set SMTP_USER and SMTP_PASS environment variables.');
-}
+// Log SMTP configuration (without exposing password)
+console.log('SMTP Configuration:', {
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    user: SMTP_USER ? `${SMTP_USER.substring(0, 4)}...` : 'NOT SET',
+    hasPassword: !!SMTP_PASS,
+});
 
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465,
+    secure: false, // Mailtrap uses STARTTLS, not SSL/TLS
+    requireTLS: true, // Require STARTTLS for port 2525
     auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
     },
-    // Add connection timeout and retry options
+    // Connection options for better reliability
     pool: true,
     maxConnections: 1,
     maxMessages: 3,
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
 });
 
 const getServiceLabel = (service) => {
@@ -190,8 +197,10 @@ exports.handler = async (event) => {
             throw new Error('SMTP credentials are not configured. Please set SMTP_USER and SMTP_PASS environment variables in Netlify.');
         }
 
-        // Verify connection
+        // Verify connection (this will test authentication)
+        console.log('Verifying SMTP connection...');
         await transporter.verify();
+        console.log('SMTP connection verified successfully');
         
         // Send email
         const info = await transporter.sendMail(mailOptions);
