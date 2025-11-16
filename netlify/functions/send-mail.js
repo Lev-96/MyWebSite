@@ -3,10 +3,10 @@ const nodemailer = require('nodemailer');
 const {
   SMTP_HOST = 'smtp.gmail.com',
   SMTP_PORT = '587',
-  SMTP_USER = 'levonbakunts96@gmail.com',
-  SMTP_PASS = 'wryxgbkrkrgvswrj',
+  SMTP_USER = 'levonbakunts3@gmail.com',
+  SMTP_PASS = 'inaekbkevldqwyvv',
   SMTP_FROM_NAME = 'Web Development by Levon',
-  CONTACT_RECIPIENT = 'levonbakunts3@gmail.com',
+  CONTACT_RECIPIENT = 'levonbakunts96@gmail.com',
 } = process.env;
 
 const RESPONSE_HEADERS = {
