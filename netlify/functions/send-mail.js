@@ -15,6 +15,16 @@ const RESPONSE_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// Функция для получения текста автоответа
+const getAutoReplyMessage = (name) => {
+    return `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`;
+};
+
+// Проверка наличия учетных данных
+if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP credentials are missing. Please set SMTP_USER and SMTP_PASS environment variables.');
+}
+
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
@@ -23,8 +33,8 @@ const transporter = nodemailer.createTransport({
         user: SMTP_USER,
         pass: SMTP_PASS,
     },
-    // Важно: добавляем DKIM, если поддерживается (Яндекс поддерживает)
-    // dkim: { ... } — можно добавить позже, если есть подпись
+    // Для Mailtrap используем STARTTLS
+    requireTLS: Number(SMTP_PORT) === 2525,
 });
 
 const getServiceLabel = (service) => {
@@ -107,7 +117,7 @@ const buildAutoReplyHtml = (name) => `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${AUTO_REPLY_SUBJECT}</title>
+    <title>Thank you for contacting us!</title>
   </head>
   <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f9f9f9;">
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
@@ -182,8 +192,8 @@ exports.handler = async (event) => {
     const autoReplyMail = {
         from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`, // Только ваш email!
         to: email,
-        subject: AUTO_REPLY_SUBJECT,
-        text: AUTO_REPLY_MESSAGE.replace('{name}', name),
+        subject: 'Thank you for contacting us!',
+        text: getAutoReplyMessage(name),
         html: buildAutoReplyHtml(name),
         headers: {
             'X-Auto-Response-Suppress': 'All',
@@ -195,23 +205,62 @@ exports.handler = async (event) => {
     };
 
     try {
-        // Отправляем оба письма
-        await Promise.all([
+        // Проверка учетных данных перед отправкой
+        if (!SMTP_USER || !SMTP_PASS) {
+            throw new Error('SMTP credentials are not configured. Please set SMTP_USER and SMTP_PASS environment variables in Netlify.');
+        }
+
+        // Проверка соединения (опционально, но полезно для диагностики)
+        try {
+            await transporter.verify();
+            console.log('SMTP connection verified successfully');
+        } catch (verifyError) {
+            console.warn('SMTP verification warning:', verifyError.message);
+            // Продолжаем отправку, даже если verify не прошел
+        }
+
+        // Отправляем оба письма параллельно
+        const [internalResult, autoReplyResult] = await Promise.all([
             transporter.sendMail(internalMail),
             transporter.sendMail(autoReplyMail)
         ]);
 
+        console.log('Internal mail sent:', internalResult.messageId);
+        console.log('Auto-reply sent:', autoReplyResult.messageId);
+
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true }),
+            body: JSON.stringify({ 
+                success: true,
+                messageId: internalResult.messageId,
+                confirmationId: autoReplyResult.messageId
+            }),
         };
     } catch (error) {
-        console.error('Email error:', error);
+        console.error('Email sending error:', error);
+        
+        // Более детальные сообщения об ошибках
+        let errorMessage = 'Failed to send email.';
+        
+        if (error.code === 'EAUTH') {
+            errorMessage = 'SMTP authentication failed. Please check your credentials.';
+        } else if (error.code === 'ECONNECTION') {
+            errorMessage = 'Could not connect to SMTP server. Please check your SMTP settings.';
+        } else if (error.code === 'ETIMEDOUT') {
+            errorMessage = 'SMTP connection timed out. Please try again later.';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: 'Failed to send email.' }),
+            body: JSON.stringify({ 
+                success: false, 
+                message: errorMessage,
+                error: error.code || 'UNKNOWN_ERROR'
+            }),
         };
     }
 };
