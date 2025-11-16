@@ -15,30 +15,16 @@ const RESPONSE_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// Log SMTP configuration (without exposing password)
-console.log('SMTP Configuration:', {
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    user: SMTP_USER ? `${SMTP_USER.substring(0, 4)}...` : 'NOT SET',
-    hasPassword: !!SMTP_PASS,
-});
-
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
-    secure: false, // Mailtrap uses STARTTLS, not SSL/TLS
-    requireTLS: true, // Require STARTTLS for port 2525
+    secure: Number(SMTP_PORT) === 465,
     auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
     },
-    // Connection options for better reliability
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 3,
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000, // 5 seconds
-    socketTimeout: 10000, // 10 seconds
+    // Важно: добавляем DKIM, если поддерживается (Яндекс поддерживает)
+    // dkim: { ... } — можно добавить позже, если есть подпись
 });
 
 const getServiceLabel = (service) => {
@@ -52,68 +38,53 @@ const getServiceLabel = (service) => {
     return labels[service] || service.charAt(0).toUpperCase() + service.slice(1);
 };
 
+const sanitize = (value = '') =>
+    String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
+
+// === HTML для входящего письма (внутреннее) ===
 const buildHtmlBody = ({ name, email, message, service }) => `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>New Contact Form Message</title>
   </head>
-  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
+  <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f7fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
       <tr>
         <td align="center">
-          <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-            <!-- Header -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);overflow:hidden;">
             <tr>
-              <td style="background: linear-gradient(135deg, #6c93ec 0%, #5a7fdb 100%); padding: 40px 30px; text-align: center;">
-                <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">New Contact Form Submission</h1>
+              <td style="background:linear-gradient(135deg,#6c93ec,#5a7fdb);padding:40px 30px;text-align:center;">
+                <h1 style="margin:0;color:#fff;font-size:28px;font-weight:600;">New Contact Form Submission</h1>
               </td>
             </tr>
-            
-            <!-- Content -->
             <tr>
-              <td style="padding: 40px 30px;">
-                <p style="margin: 0 0 30px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+              <td style="padding:40px 30px;">
+                <p style="margin:0 0 30px;color:#64748b;font-size:16px;line-height:1.6;">
                   You have received a new message from your website contact form.
                 </p>
-                
-                <!-- Table with form data -->
-                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 30px; background-color: #f8fafc; border-radius: 8px; overflow: hidden;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:30px;background:#f8fafc;border-radius:8px;overflow:hidden;">
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Name
-                    </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0;">
-                      ${name}
-                    </td>
+                    <td style="padding:16px 20px;background:#6c93ec;color:#fff;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Name</td>
+                    <td style="padding:16px 20px;background:#fff;color:#1e293b;font-size:15px;border-left:1px solid #e2e8f0;">${name}</td>
                   </tr>
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Email
-                    </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0;">
-                      <a href="mailto:${email}" style="color: #6c93ec; text-decoration: none;">${email}</a>
+                    <td style="padding:16px 20px;background:#6c93ec;color:#fff;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Email</td>
+                    <td style="padding:16px 20px;background:#fff;color:#1e293b;font-size:15px;border-left:1px solid #e2e8f0;">
+                      <a href="mailto:${email}" style="color:#6c93ec;text-decoration:none;">${email}</a>
                     </td>
                   </tr>
                   ${service ? `
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Service
-                    </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0;">
-                      ${getServiceLabel(service)}
-                    </td>
-                  </tr>
-                  ` : ''}
+                    <td style="padding:16px 20px;background:#6c93ec;color:#fff;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Service</td>
+                    <td style="padding:16px 20px;background:#fff;color:#1e293b;font-size:15px;border-left:1px solid #e2e8f0;">${getServiceLabel(service)}</td>
+                  </tr>` : ''}
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: top;">
-                      Message
-                    </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; line-height: 1.6;">
-                      <div style="white-space: pre-wrap; background-color: #f8fafc; padding: 16px; border-radius: 6px; border-left: 3px solid #6c93ec;">
+                    <td style="padding:16px 20px;background:#6c93ec;color:#fff;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;">Message</td>
+                    <td style="padding:16px 20px;background:#fff;color:#1e293b;font-size:15px;border-left:1px solid #e2e8f0;line-height:1.6;">
+                      <div style="white-space:pre-wrap;background:#f8fafc;padding:16px;border-radius:6px;border-left:3px solid #6c93ec;">
                         ${message.replace(/\n/g, '<br>')}
                       </div>
                     </td>
@@ -129,48 +100,33 @@ const buildHtmlBody = ({ name, email, message, service }) => `
   </html>
 `;
 
-const buildConfirmationEmail = ({ name, email }) => `
+// === HTML для автоответа (отправляется клиенту) ===
+const buildAutoReplyHtml = (name) => `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Thank you for contacting us!</title>
+    <title>${AUTO_REPLY_SUBJECT}</title>
   </head>
-  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
+  <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f9f9f9;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
       <tr>
         <td align="center">
-          <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-            <!-- Green Banner Header -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);overflow:hidden;">
             <tr>
-              <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 40px 30px; text-align: center;">
-                <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">Thank You, ${name}!</h1>
+              <td style="background:linear-gradient(135deg,#10b981,#059669);padding:40px 30px;text-align:center;">
+                <h1 style="margin:0;color:#fff;font-size:26px;font-weight:600;">Thank You, ${sanitize(name)}!</h1>
               </td>
             </tr>
-            
-            <!-- Content -->
             <tr>
-              <td style="padding: 40px 30px;">
-                <p style="margin: 0 0 20px 0; color: #1e293b; font-size: 16px; line-height: 1.6;">
-                  Hi ${name},
-                </p>
-                
-                <p style="margin: 0 0 20px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
-                  We have received your message and will get back to you within <strong style="color: #1e293b;">24 hours</strong>.
-                </p>
-                
-                <p style="margin: 0 0 30px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
-                  Thank you for your interest in our services!
-                </p>
-                
-                <p style="margin: 0 0 10px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
-                  Best regards,
-                </p>
-                
-                <p style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 600;">
-                  ${SMTP_FROM_NAME}
+              <td style="padding:40px 30px;color:#374151;font-size:16px;line-height:1.6;">
+                <p>Hi ${sanitize(name)},</p>
+                <p>We have received your message and will get back to you within <strong>24 hours</strong>.</p>
+                <p>Thank you for your interest in our services!</p>
+                <p style="margin-top:30px;font-size:14px;color:#94a3b8;">
+                  Best regards,<br>
+                  <strong>${SMTP_FROM_NAME}</strong>
                 </p>
               </td>
             </tr>
@@ -182,35 +138,20 @@ const buildConfirmationEmail = ({ name, email }) => `
   </html>
 `;
 
-const sanitize = (value = '') =>
-    String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
-
 exports.handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true }),
-        };
+        return { statusCode: 200, headers: RESPONSE_HEADERS, body: JSON.stringify({ success: true }) };
     }
 
     if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: 'Method not allowed.' }),
-        };
+        return { statusCode: 405, headers: RESPONSE_HEADERS, body: JSON.stringify({ success: false, message: 'Method not allowed.' }) };
     }
 
     let payload;
     try {
         payload = JSON.parse(event.body || '{}');
     } catch (error) {
-        return {
-            statusCode: 400,
-            headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: 'Invalid JSON payload.' }),
-        };
+        return { statusCode: 400, headers: RESPONSE_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid JSON.' }) };
     }
 
     const name = sanitize(payload.name);
@@ -219,98 +160,58 @@ exports.handler = async (event) => {
     const service = payload.service ? sanitize(payload.service) : null;
 
     if (!name || !email || !message) {
-        return {
-            statusCode: 422,
-            headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: 'Please fill out all fields.' }),
-        };
+        return { statusCode: 422, headers: RESPONSE_HEADERS, body: JSON.stringify({ success: false, message: 'Fill all fields.' }) };
     }
 
-    const mailOptions = {
+    // === 1. Письмо ВАМ (внутреннее) ===
+    const internalMail = {
         from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`,
         to: CONTACT_RECIPIENT,
         replyTo: `${name} <${email}>`,
-        subject: `New Contact Form Message from ${name}`,
+        subject: `New Contact: ${name}`,
         text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
         html: buildHtmlBody({ name, email, message, service }),
         headers: {
-            'X-Priority': '1',
-            'X-MSMail-Priority': 'High',
-            'Importance': 'high',
-            'X-Mailer': 'NodeMailer',
-            'Date': new Date().toUTCString(),
-            'MIME-Version': '1.0',
+            'X-Priority': '3', // Нормальный приоритет
+            'Precedence': 'bulk',
+            'List-Unsubscribe': `<mailto:${SMTP_USER}?subject=unsubscribe>, <https://yourdomain.com/unsubscribe>`,
         },
-        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST || 'mailtrap.io'}>`,
+    };
+
+    // === 2. АВТООТВЕТ ОТПРАВИТЕЛЮ ===
+    const autoReplyMail = {
+        from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`, // Только ваш email!
+        to: email,
+        subject: AUTO_REPLY_SUBJECT,
+        text: AUTO_REPLY_MESSAGE.replace('{name}', name),
+        html: buildAutoReplyHtml(name),
+        headers: {
+            'X-Auto-Response-Suppress': 'All',
+            'Auto-Submitted': 'auto-generated',
+            'Precedence': 'auto',
+            'List-Unsubscribe': `<mailto:${SMTP_USER}?subject=unsubscribe>`,
+        },
+        // Важно: НЕ используем replyTo с чужим email!
     };
 
     try {
-        // Verify transporter configuration before sending
-        if (!SMTP_USER || !SMTP_PASS) {
-            throw new Error('SMTP credentials are not configured. Please set SMTP_USER and SMTP_PASS environment variables in Netlify.');
-        }
+        // Отправляем оба письма
+        await Promise.all([
+            transporter.sendMail(internalMail),
+            transporter.sendMail(autoReplyMail)
+        ]);
 
-        // Verify connection (this will test authentication)
-        console.log('Verifying SMTP connection...');
-        await transporter.verify();
-        console.log('SMTP connection verified successfully');
-        
-        // Send email to admin (notification about new contact form submission)
-        const adminInfo = await transporter.sendMail(mailOptions);
-        console.log('Admin notification sent successfully:', adminInfo.messageId);
-        
-        // Send confirmation email to client
-        const confirmationOptions = {
-            from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`,
-            to: email, // Send to the client who submitted the form
-            subject: 'Thank you for contacting us!',
-            text: `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`,
-            html: buildConfirmationEmail({ name, email }),
-            headers: {
-                'X-Priority': '1',
-                'X-MSMail-Priority': 'High',
-                'Importance': 'high',
-                'X-Mailer': 'NodeMailer',
-                'Date': new Date().toUTCString(),
-                'MIME-Version': '1.0',
-            },
-            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST || 'mailtrap.io'}>`,
-        };
-        
-        const confirmationInfo = await transporter.sendMail(confirmationOptions);
-        console.log('Client confirmation sent successfully:', confirmationInfo.messageId);
-        
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ 
-                success: true, 
-                messageId: adminInfo.messageId,
-                confirmationId: confirmationInfo.messageId
-            }),
+            body: JSON.stringify({ success: true }),
         };
     } catch (error) {
-        console.error('Error sending email:', error);
-        
-        // Provide more helpful error messages
-        let errorMessage = error.message || 'Failed to send email';
-        
-        if (error.code === 'EAUTH') {
-            errorMessage = 'SMTP authentication failed. Please check your credentials.';
-        } else if (error.code === 'ECONNECTION') {
-            errorMessage = 'Could not connect to SMTP server. Please check your SMTP settings.';
-        } else if (error.code === 'ETIMEDOUT') {
-            errorMessage = 'SMTP connection timed out. Please try again later.';
-        }
-        
+        console.error('Email error:', error);
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ 
-                success: false, 
-                message: errorMessage,
-                error: error.code || 'UNKNOWN_ERROR'
-            }),
+            body: JSON.stringify({ success: false, message: 'Failed to send email.' }),
         };
     }
 };
