@@ -67,39 +67,39 @@ const buildHtmlBody = ({ name, email, message, service }) => `
                 <p style="margin: 0 0 30px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
                   You have received a new message from your website contact form.
                 </p>
-                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 30px; background-color: #f8fafc; border-radius: 8px; overflow: hidden; table-layout: fixed;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 30px; background-color: #f8fafc; border-radius: 8px; overflow: hidden;">
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; width: 140px;">
+                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; width: 25%;">
                       Name
                     </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word;">
+                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; width: 75%;">
                       ${name}
                     </td>
                   </tr>
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; width: 140px;">
+                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; width: 25%;">
                       Email
                     </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word;">
+                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; width: 75%;">
                       <a href="mailto:${email}" style="color: #6c93ec; text-decoration: none; word-break: break-all;">${email}</a>
                     </td>
                   </tr>
                   ${service ? `
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; width: 140px;">
+                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; width: 25%;">
                       Service
                     </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word;">
+                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; width: 75%;">
                       ${getServiceLabel(service)}
                     </td>
                   </tr>
                   ` : ''}
                   <tr>
-                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: top; width: 140px;">
+                    <td style="padding: 16px 20px; background-color: #6c93ec; color: #ffffff; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: top; white-space: nowrap; width: 25%;">
                       Message
                     </td>
-                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
-                      <div style="white-space: pre-wrap; background-color: #f8fafc; padding: 16px; border-radius: 6px; border-left: 3px solid #6c93ec; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; box-sizing: border-box;">
+                    <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; width: 75%;">
+                      <div style="white-space: pre-wrap; background-color: #f8fafc; padding: 16px; border-radius: 6px; border-left: 3px solid #6c93ec; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0; text-align: left;">
                         ${message.replace(/\n/g, '<br>')}
                       </div>
                     </td>
@@ -252,7 +252,8 @@ exports.handler = async (event) => {
 
     const name = sanitize(payload.name);
     const email = sanitize(payload.email);
-    const message = sanitize(payload.message);
+    let message = sanitize(payload.message);
+    message = message.split('\n').map(line => line.trimStart()).join('\n').trim();
     const service = payload.service ? sanitize(payload.service) : null;
 
     if (!name || !email || !message) {
