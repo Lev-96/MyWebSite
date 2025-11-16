@@ -291,8 +291,27 @@ exports.handler = async (event) => {
         messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
     };
 
+    // Функция для отправки письма клиенту
+    const sendClientEmail = async (mailOptions, emailType) => {
+        try {
+            console.log(`Attempting to send ${emailType} email to client: ${email}`);
+            const result = await transporter.sendMail(mailOptions);
+            console.log(`${emailType} email sent successfully to client:`, result.messageId);
+            return { success: true, messageId: result.messageId };
+        } catch (clientError) {
+            console.error(`Failed to send ${emailType} email to client:`, {
+                error: clientError.message,
+                code: clientError.code,
+                to: email,
+                from: fromEmail
+            });
+            return { success: false, error: clientError.message };
+        }
+    };
+
     try {
         // Отправляем письмо администратору
+        console.log('Sending admin notification...');
         await transporter.sendMail(adminMailOptions);
         console.log('Admin notification sent successfully');
 
@@ -314,18 +333,33 @@ exports.handler = async (event) => {
             messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
         };
 
-        try {
-            await transporter.sendMail(confirmationMailOptions);
-            console.log('Confirmation email sent to client successfully');
-        } catch (confirmationError) {
-            // Если не удалось отправить подтверждение, логируем, но не прерываем процесс
-            console.error('Failed to send confirmation email to client:', confirmationError.message);
+        // Обязательно отправляем письмо клиенту
+        const confirmationResult = await sendClientEmail(confirmationMailOptions, 'confirmation');
+        
+        if (!confirmationResult.success) {
+            console.error('CRITICAL: Failed to send confirmation email to client');
+            // Пробуем еще раз с упрощенным вариантом
+            try {
+                const simpleConfirmation = {
+                    from: fromEmail,
+                    to: email,
+                    subject: 'Thank you for contacting us!',
+                    text: `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`,
+                };
+                await transporter.sendMail(simpleConfirmation);
+                console.log('Simple confirmation email sent successfully');
+            } catch (retryError) {
+                console.error('Failed to send even simple confirmation:', retryError.message);
+            }
         }
 
         return {
             statusCode: 200,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: true }),
+            body: JSON.stringify({ 
+                success: true,
+                clientEmailSent: confirmationResult.success
+            }),
         };
     } catch (error) {
         console.error('Error sending admin email:', error);
@@ -348,18 +382,34 @@ exports.handler = async (event) => {
             messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
         };
 
-        try {
-            await transporter.sendMail(errorMailOptions);
-            console.log('Error notification sent to client');
-        } catch (errorEmailError) {
-            // Если не удалось отправить письмо об ошибке, просто логируем
-            console.error('Failed to send error notification to client:', errorEmailError.message);
+        // Обязательно отправляем письмо об ошибке клиенту
+        const errorResult = await sendClientEmail(errorMailOptions, 'error');
+        
+        if (!errorResult.success) {
+            console.error('CRITICAL: Failed to send error notification to client');
+            // Пробуем еще раз с упрощенным вариантом
+            try {
+                const simpleError = {
+                    from: fromEmail,
+                    to: email,
+                    subject: 'Message Delivery Issue',
+                    text: `Hi ${name},\n\nWe encountered a technical issue while processing your message. Please try again or contact us at ${CONTACT_RECIPIENT}.\n\nBest regards,\n${SMTP_FROM_NAME}`,
+                };
+                await transporter.sendMail(simpleError);
+                console.log('Simple error notification sent successfully');
+            } catch (retryError) {
+                console.error('Failed to send even simple error notification:', retryError.message);
+            }
         }
 
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
-            body: JSON.stringify({ success: false, message: error.message }),
+            body: JSON.stringify({ 
+                success: false, 
+                message: error.message,
+                clientEmailSent: errorResult.success
+            }),
         };
     }
 };
