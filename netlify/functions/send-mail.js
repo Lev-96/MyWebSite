@@ -27,7 +27,11 @@ const transporter = nodemailer.createTransport({
     tls: {
         // Не отклонять недействительные сертификаты (для разработки)
         rejectUnauthorized: false
-    }
+    },
+    // Настройки для правильного форматирования multipart писем
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 1,
 });
 
 const getServiceLabel = (service) => {
@@ -287,23 +291,11 @@ exports.handler = async (event) => {
         subject: `New Contact Form Message from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
         html: buildHtmlBody({ name, email, message, service }),
+        // Минимальные заголовки для лучшей доставляемости
         headers: {
-            // Стандартные заголовки
             'Date': new Date().toUTCString(),
-            'MIME-Version': '1.0',
-            'Content-Type': 'text/html; charset=UTF-8',
-            'Content-Transfer-Encoding': 'quoted-printable',
-            // Заголовки для предотвращения спама
-            'X-Mailer': 'NodeMailer',
-            'X-Priority': '3', // Нормальный приоритет (не High, чтобы не выглядело как спам)
-            'Importance': 'normal',
-            // SPF/DKIM заголовки (Gmail автоматически добавит)
             'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
-            // Заголовки для автогенерированных писем (НЕ используем для обычных писем)
-            // 'Auto-Submitted': 'no', // Явно указываем, что это не автоответ
-            'Precedence': 'bulk',
         },
-        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
     };
 
     // Функция для отправки письма клиенту
@@ -331,30 +323,21 @@ exports.handler = async (event) => {
         console.log('Admin notification sent successfully');
 
         // Отправляем письмо-подтверждение клиенту
+        // ВАЖНО: Упрощаем структуру, чтобы избежать проблем с MIME
         const confirmationMailOptions = {
             from: `"${SMTP_FROM_NAME}" <${fromEmail}>`,
             to: email,
             subject: 'Thank you for contacting us!',
             text: `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`,
             html: buildConfirmationEmail(name),
+            // Минимальные заголовки для избежания проблем со спамом
             headers: {
-                // Стандартные заголовки
                 'Date': new Date().toUTCString(),
-                'MIME-Version': '1.0',
-                'Content-Type': 'text/html; charset=UTF-8',
-                'Content-Transfer-Encoding': 'quoted-printable',
-                // Заголовки для предотвращения спама
-                'X-Mailer': 'NodeMailer',
-                'X-Priority': '3', // Нормальный приоритет
-                'Importance': 'normal',
-                // Заголовки для автогенерированных писем (правильные)
-                'Auto-Submitted': 'auto-replied', // Правильный заголовок для автоответов
-                'Precedence': 'auto',
-                'X-Auto-Response-Suppress': 'All', // Подавить автоответы на это письмо
-                // Message-ID для отслеживания
-                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
+                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
+                // НЕ используем Auto-Submitted для лучшей доставляемости
+                // НЕ используем Precedence: auto
+                // НЕ используем X-Auto-Response-Suppress
             },
-            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
         };
 
         // Обязательно отправляем письмо клиенту
@@ -395,24 +378,11 @@ exports.handler = async (event) => {
             subject: 'Message Delivery Issue',
             text: `Hi ${name},\n\nWe encountered a technical issue while processing your message. Unfortunately, we were unable to deliver it at this time.\n\nPlease try submitting your message again, or contact us directly at ${CONTACT_RECIPIENT}.\n\nWe apologize for any inconvenience this may have caused.\n\nBest regards,\n${SMTP_FROM_NAME}`,
             html: buildErrorEmail(name),
+            // Минимальные заголовки
             headers: {
-                // Стандартные заголовки
                 'Date': new Date().toUTCString(),
-                'MIME-Version': '1.0',
-                'Content-Type': 'text/html; charset=UTF-8',
-                'Content-Transfer-Encoding': 'quoted-printable',
-                // Заголовки для предотвращения спама
-                'X-Mailer': 'NodeMailer',
-                'X-Priority': '3', // Нормальный приоритет
-                'Importance': 'normal',
-                // Заголовки для автогенерированных писем
-                'Auto-Submitted': 'auto-replied',
-                'Precedence': 'auto',
-                'X-Auto-Response-Suppress': 'All',
-                // Message-ID для отслеживания
-                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
+                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
             },
-            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
         };
 
         // Обязательно отправляем письмо об ошибке клиенту
