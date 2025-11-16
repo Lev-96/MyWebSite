@@ -36,7 +36,30 @@ welcome to my portfolio">
         <a href="#" class="u-image u-logo u-image-1" data-image-width="218" data-image-height="130">
           <img src="images/matt-logo2.png" class="u-logo-image u-logo-image-1">
         </a>
-        <nav class="u-menu u-menu-one-level u-offcanvas u-menu-1" role="navigation" aria-label="Menu navigation">
+        <div class="theme-toggle-wrapper">
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+            <span class="theme-toggle__icon theme-toggle__icon--sun">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </span>
+            <span class="theme-toggle__icon theme-toggle__icon--moon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </span>
+            <span class="theme-toggle__label" id="theme-toggle-label">Light</span>
+          </button>
+        </div>
+        <nav class="u-menu u-menu-one-level u-offcanvas u-menu-1" role="navigation" aria-label="Menu navigation" style="margin: 0">
           <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px; font-weight: 700;">
             <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-text-hover-color u-custom-top-bottom-menu-spacing u-hamburger-link u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#" tabindex="-1" aria-label="Open menu" aria-controls="5fca">
               <svg class="u-svg-link" viewBox="0 0 24 24"><use xlink:href="#menu-hamburger"></use></svg>
@@ -379,6 +402,107 @@ I’m eager to contribute my expertise to your team and help drive success with 
       <span class="form-popup__message"></span>
     </div>
   </div>
+<script>
+  (function() {
+    var THEME_STORAGE_KEY = 'website-theme';
+    var themes = ['light', 'dark'];
+    var themeNames = {
+      'light': 'Light',
+      'dark': 'Dark'
+    };
+    var currentThemeIndex = 0;
+    
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.body.classList.remove('theme-dark', 'theme-light');
+      document.body.classList.add('theme-' + theme);
+      
+      if (theme === 'dark') {
+        document.documentElement.style.setProperty('--bg-primary', '#0f172a');
+        document.documentElement.style.setProperty('--bg-secondary', '#1e293b');
+        document.documentElement.style.setProperty('--text-primary', '#f8fafc');
+      } else {
+        document.documentElement.style.setProperty('--bg-primary', '#f8f9fb');
+        document.documentElement.style.setProperty('--bg-secondary', '#ffffff');
+        document.documentElement.style.setProperty('--text-primary', '#1b1f23');
+      }
+      
+      var label = document.getElementById('theme-toggle-label');
+      if (label) {
+        label.textContent = themeNames[theme];
+      }
+      
+      var toggle = document.getElementById('theme-toggle');
+      if (toggle) {
+        var currentName = themeNames[theme];
+        var nextTheme = theme === 'light' ? 'dark' : 'light';
+        var nextName = themeNames[nextTheme];
+        toggle.setAttribute('title', 'Current theme: ' + currentName + ' - Click to switch to ' + nextName);
+        toggle.setAttribute('aria-label', 'Toggle theme: ' + currentName + ' → ' + nextName);
+      }
+    }
+    
+    function initTheme() {
+      var saved = localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved && themes.includes(saved)) {
+        currentThemeIndex = themes.indexOf(saved);
+      } else {
+        saved = 'light';
+        currentThemeIndex = themes.indexOf('light');
+        localStorage.setItem(THEME_STORAGE_KEY, saved);
+      }
+      applyTheme(themes[currentThemeIndex]);
+    }
+    
+    function cycleTheme() {
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      var theme = themes[currentThemeIndex];
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      applyTheme(theme);
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTheme);
+    } else {
+      initTheme();
+    }
+    
+    var toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', cycleTheme);
+    }
+  })();
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var header = document.querySelector('header.u-header');
+    if (!header) {
+      return;
+    }
+
+    var scrollThreshold = 80;
+
+    function setupHeader() {
+      var headerHeight = header.offsetHeight;
+      document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
+      document.body.classList.add('has-sticky-header');
+      header.classList.add('sticky-header');
+    }
+
+    function handleScroll() {
+      var currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      var isScrolled = currentScroll > scrollThreshold;
+      header.classList.toggle('sticky-header--scrolled', isScrolled);
+    }
+
+    setupHeader();
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', function () {
+      requestAnimationFrame(setupHeader);
+    });
+  });
+</script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var form = document.querySelector('.u-form form');
