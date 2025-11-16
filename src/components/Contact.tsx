@@ -127,7 +127,9 @@ export function Contact() {
     setIsSubmitting(true);
 
     // Закрываем предыдущее уведомление если открыто
-    setNotification({ ...notification, isOpen: false });
+    if (notification.isOpen) {
+      setNotification({ isOpen: false, type: "success", message: "" });
+    }
 
     try {
       // Определяем URL для функции в зависимости от окружения
@@ -174,12 +176,16 @@ export function Contact() {
         console.log("Success! Showing popup..."); // Debug log
         const successMessage = data.message || "Message sent successfully! I'll get back to you soon.";
         console.log("Setting notification:", { isOpen: true, type: "success", message: successMessage });
+        
+        // Очищаем форму
+        setFormData({ name: "", email: "", message: "", service: "" });
+        
+        // Показываем popup сразу для плавной анимации
         setNotification({
           isOpen: true,
           type: "success",
           message: successMessage,
         });
-        setFormData({ name: "", email: "", message: "", service: "" });
       } else {
         // Формируем понятное сообщение об ошибке
         let errorMsg = data.error || data.message || "Failed to send message";
@@ -212,6 +218,8 @@ export function Contact() {
       }
       
       console.log("Showing error popup:", errorMessage); // Debug log
+      
+      // Показываем popup сразу для плавной анимации
       setNotification({
         isOpen: true,
         type: "error",

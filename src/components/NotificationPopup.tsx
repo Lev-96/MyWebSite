@@ -26,18 +26,23 @@ export function NotificationPopup({
       // Сброс прогресса при открытии
       setProgress(100);
       
-      // Автоматическое закрытие через 5 секунд
+      // Автоматическое закрытие через 4.5 секунд
+      const closeDelay = 4500; // 4.5 секунды
+      const updateInterval = 50; // Обновляем каждые 50ms для плавности
+      const totalSteps = closeDelay / updateInterval; // 90 шагов
+      const stepDecrement = 100 / totalSteps; // ~1.11% за шаг
+      
       const timer = setTimeout(() => {
         onClose();
-      }, 5000);
+      }, closeDelay);
 
-      // Анимация прогресс-бара
+      // Анимация прогресс-бара (синхронизирована с таймером закрытия)
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
-          const newProgress = prev - 2; // Уменьшаем на 2% каждые 100ms
+          const newProgress = prev - stepDecrement;
           return newProgress <= 0 ? 0 : newProgress;
         });
-      }, 100);
+      }, updateInterval);
 
       return () => {
         clearTimeout(timer);
@@ -244,6 +249,7 @@ export function NotificationPopup({
                       boxShadow: type === "success"
                         ? "0 0 10px rgba(34, 197, 94, 0.5)"
                         : "0 0 10px rgba(239, 68, 68, 0.5)",
+                      transition: "width 0.1s linear",
                     }}
                   />
                 </div>

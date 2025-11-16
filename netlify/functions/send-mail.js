@@ -5,7 +5,7 @@ const {
   SMTP_PORT = '465',
   SMTP_USER = 'web.developer0101@ya.ru',
   SMTP_PASS = 'arvrbpkxctevxhfx',
-  SMTP_FROM_NAME = 'Levon Bakunts',
+  SMTP_FROM_NAME = 'Web Development Agency',
   CONTACT_RECIPIENT = 'web.developer0101@ya.ru',
 } = process.env;
 
@@ -38,10 +38,12 @@ const getServiceLabel = (service) => {
 
 const buildHtmlBody = ({ name, email, message, service }) => `
   <!DOCTYPE html>
-  <html>
+  <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>New Contact Form Message</title>
   </head>
   <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
@@ -135,10 +137,12 @@ const buildConfirmationHtml = ({ name, message, success = true }) => {
   if (!success) {
     return `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Message Delivery Failed</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
@@ -193,10 +197,12 @@ const buildConfirmationHtml = ({ name, message, success = true }) => {
   
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Thank you for contacting us</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
@@ -349,11 +355,14 @@ exports.handler = async (event) => {
     subject: `New Contact Form Message from ${name}`,
     text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
     html: buildHtmlBody({ name, email, message, service }),
-    // Headers to reduce spam score
+    // Headers to reduce spam score and improve deliverability
     headers: {
       'X-Priority': '1',
       'X-MSMail-Priority': 'High',
       'Importance': 'high',
+      'X-Mailer': 'NodeMailer',
+      'Date': new Date().toUTCString(),
+      'MIME-Version': '1.0',
     },
     // Message ID для лучшей доставляемости
     messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
@@ -366,11 +375,14 @@ exports.handler = async (event) => {
     subject: 'Thank you for contacting us!',
     text: `Hi ${name || 'there'}!\n\nThanks for reaching out. We received your message and will get back to you shortly.\n\nYour message:\n${message}\n\nBest regards,\n${SMTP_FROM_NAME}`,
     html: buildConfirmationHtml({ name, message, success: true }),
-    // Headers to reduce spam score
+    // Headers to reduce spam score and improve deliverability
     headers: {
       'X-Priority': '1',
       'X-MSMail-Priority': 'High',
       'Importance': 'high',
+      'X-Mailer': 'NodeMailer',
+      'Date': new Date().toUTCString(),
+      'MIME-Version': '1.0',
     },
     // Message ID для лучшей доставляемости
     messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
