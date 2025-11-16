@@ -43,7 +43,9 @@ const getServiceLabel = (service) => {
     return labels[service] || service.charAt(0).toUpperCase() + service.slice(1);
 };
 
-const buildHtmlBody = ({ name, email, message, service }) => `
+const buildHtmlBody = ({ name, email, message, service }) => {
+  const messageHtml = message.split('\n').map(line => line.trimStart()).join('<br>');
+  return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -99,8 +101,8 @@ const buildHtmlBody = ({ name, email, message, service }) => `
                       Message
                     </td>
                     <td style="padding: 16px 20px; background-color: #ffffff; color: #1e293b; font-size: 15px; border-left: 1px solid #e2e8f0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; width: 75%;">
-                      <div style="white-space: pre-wrap; background-color: #f8fafc; padding: 16px; border-radius: 6px; border-left: 3px solid #6c93ec; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0; text-align: left;">
-                        ${message.replace(/\n/g, '<br>')}
+                      <div style="background-color: #f8fafc; padding: 16px; border-radius: 6px; border-left: 3px solid #6c93ec; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0; text-align: left; white-space: normal;">
+                        ${messageHtml}
                       </div>
                     </td>
                   </tr>
@@ -114,6 +116,7 @@ const buildHtmlBody = ({ name, email, message, service }) => `
   </body>
   </html>
 `;
+};
 
 const sanitize = (value = '') =>
     String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
