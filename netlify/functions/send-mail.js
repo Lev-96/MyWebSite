@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer');
 const {
   SMTP_HOST = 'smtp.gmail.com',
   SMTP_PORT = '587',
-  SMTP_USER = 'levonbakunts96@gmail.com\n',
+  SMTP_USER = 'levonbakunts96@gmail.com',
   SMTP_PASS = 'wryxgbkrkrgvswrj',
   SMTP_FROM_NAME = 'Web Development Agency',
   CONTACT_RECIPIENT = 'levonbakunts96@gmail.com',
@@ -18,11 +18,16 @@ const RESPONSE_HEADERS = {
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465,
+    secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports
+    requireTLS: Number(SMTP_PORT) === 587, // Gmail requires TLS on port 587
     auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
+        user: SMTP_USER.trim(), // Убираем лишние пробелы и переносы строк
+        pass: SMTP_PASS.trim(),
     },
+    tls: {
+        // Не отклонять недействительные сертификаты (для разработки)
+        rejectUnauthorized: false
+    }
 });
 
 const getServiceLabel = (service) => {
@@ -124,6 +129,7 @@ const buildConfirmationEmail = (name) => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone=no">
     <title>Thank you for contacting us!</title>
   </head>
   <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
@@ -178,6 +184,7 @@ const buildErrorEmail = (name) => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone=no">
     <title>Message Delivery Issue</title>
   </head>
   <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa;">
@@ -269,8 +276,8 @@ exports.handler = async (event) => {
         };
     }
 
-    // Используем CONTACT_RECIPIENT как email отправителя (для Mailtrap SMTP_USER это username)
-    const fromEmail = CONTACT_RECIPIENT;
+    // Для Gmail используем SMTP_USER как email отправителя
+    const fromEmail = SMTP_USER.trim();
 
     // === 1. Письмо администратору ===
     const adminMailOptions = {
@@ -281,14 +288,22 @@ exports.handler = async (event) => {
         text: `Name: ${name}\nEmail: ${email}\n${service ? `Service: ${getServiceLabel(service)}\n` : ''}Message:\n${message}`,
         html: buildHtmlBody({ name, email, message, service }),
         headers: {
-            'X-Priority': '1',
-            'X-MSMail-Priority': 'High',
-            'Importance': 'high',
-            'X-Mailer': 'NodeMailer',
+            // Стандартные заголовки
             'Date': new Date().toUTCString(),
             'MIME-Version': '1.0',
+            'Content-Type': 'text/html; charset=UTF-8',
+            'Content-Transfer-Encoding': 'quoted-printable',
+            // Заголовки для предотвращения спама
+            'X-Mailer': 'NodeMailer',
+            'X-Priority': '3', // Нормальный приоритет (не High, чтобы не выглядело как спам)
+            'Importance': 'normal',
+            // SPF/DKIM заголовки (Gmail автоматически добавит)
+            'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
+            // Заголовки для автогенерированных писем (НЕ используем для обычных писем)
+            // 'Auto-Submitted': 'no', // Явно указываем, что это не автоответ
+            'Precedence': 'bulk',
         },
-        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
+        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
     };
 
     // Функция для отправки письма клиенту
@@ -323,14 +338,23 @@ exports.handler = async (event) => {
             text: `Hi ${name},\n\nWe have received your message and will get back to you within 24 hours.\n\nThank you for your interest in our services!\n\nBest regards,\n${SMTP_FROM_NAME}`,
             html: buildConfirmationEmail(name),
             headers: {
-                'X-Auto-Response-Suppress': 'All',
-                'Auto-Submitted': 'auto-generated',
-                'Precedence': 'auto',
-                'X-Mailer': 'NodeMailer',
+                // Стандартные заголовки
                 'Date': new Date().toUTCString(),
                 'MIME-Version': '1.0',
+                'Content-Type': 'text/html; charset=UTF-8',
+                'Content-Transfer-Encoding': 'quoted-printable',
+                // Заголовки для предотвращения спама
+                'X-Mailer': 'NodeMailer',
+                'X-Priority': '3', // Нормальный приоритет
+                'Importance': 'normal',
+                // Заголовки для автогенерированных писем (правильные)
+                'Auto-Submitted': 'auto-replied', // Правильный заголовок для автоответов
+                'Precedence': 'auto',
+                'X-Auto-Response-Suppress': 'All', // Подавить автоответы на это письмо
+                // Message-ID для отслеживания
+                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
             },
-            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
+            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-confirmation@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
         };
 
         // Обязательно отправляем письмо клиенту
@@ -372,14 +396,23 @@ exports.handler = async (event) => {
             text: `Hi ${name},\n\nWe encountered a technical issue while processing your message. Unfortunately, we were unable to deliver it at this time.\n\nPlease try submitting your message again, or contact us directly at ${CONTACT_RECIPIENT}.\n\nWe apologize for any inconvenience this may have caused.\n\nBest regards,\n${SMTP_FROM_NAME}`,
             html: buildErrorEmail(name),
             headers: {
-                'X-Auto-Response-Suppress': 'All',
-                'Auto-Submitted': 'auto-generated',
-                'Precedence': 'auto',
-                'X-Mailer': 'NodeMailer',
+                // Стандартные заголовки
                 'Date': new Date().toUTCString(),
                 'MIME-Version': '1.0',
+                'Content-Type': 'text/html; charset=UTF-8',
+                'Content-Transfer-Encoding': 'quoted-printable',
+                // Заголовки для предотвращения спама
+                'X-Mailer': 'NodeMailer',
+                'X-Priority': '3', // Нормальный приоритет
+                'Importance': 'normal',
+                // Заголовки для автогенерированных писем
+                'Auto-Submitted': 'auto-replied',
+                'Precedence': 'auto',
+                'X-Auto-Response-Suppress': 'All',
+                // Message-ID для отслеживания
+                'Message-ID': `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
             },
-            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('sandbox.smtp.', '')}>`,
+            messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}-error@${SMTP_HOST.replace('smtp.', '').replace('.com', '')}>`,
         };
 
         // Обязательно отправляем письмо об ошибке клиенту
