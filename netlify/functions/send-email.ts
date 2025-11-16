@@ -101,28 +101,37 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    const apiKey = 'pvwgflnfkrxwodly';
-    const fromEmail = 'web.developer0101@ya.ru';
-    const toEmail = 'web.developer0101@ya.ru';
+    // Получаем переменные окружения или используем значения по умолчанию
+    const apiKey = process.env.RESEND_API_KEY || 'pvwgflnfkrxwodly';
+    // Для Resend нужно использовать подтвержденный домен или onboarding@resend.dev для тестирования
+    const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+    const toEmail = process.env.TO_EMAIL || 'web.developer0101@ya.ru';
 
     if (!apiKey) {
       console.error('RESEND_API_KEY is not set');
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Email service not configured' }),
+        body: JSON.stringify({ 
+          error: 'Email service not configured',
+          details: 'RESEND_API_KEY is missing'
+        }),
       };
     }
 
-    const ownerEmailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: fromEmail,
-        to: toEmail,
-        subject: `New Contact Form Message from ${data.name}`,
+    console.log('Attempting to send email:', { fromEmail, toEmail, apiKeyLength: apiKey.length });
+
+    let ownerEmailResponse;
+    try {
+      ownerEmailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: toEmail,
+          subject: `New Contact Form Message from ${data.name}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -219,43 +228,77 @@ export const handler: Handler = async (event) => {
         `,
       }),
     });
-
-    if (!ownerEmailResponse.ok) {
-      const errorData = await ownerEmailResponse.json();
-      console.error('Failed to send owner email:', errorData);
-      
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            from: fromEmail,
-            to: data.email,
-            subject: 'Message Delivery Failed',
-            html: getErrorMessageTemplate(data.name),
-          }),
-        });
-      } catch (err) {
-        console.error('Failed to send error notification:', err);
-      }
-      
-      throw new Error('Failed to send email');
+    } catch (fetchError: any) {
+      console.error('Error fetching Resend API:', fetchError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ 
+          error: 'Failed to send email',
+          details: fetchError.message || 'Network error',
+          success: false 
+        }),
+      };
     }
 
-    const autoReplyResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: fromEmail,
-        to: data.email,
-        subject: 'Thank you for contacting us!',
-        html: `
+    if (!ownerEmailResponse.ok) {
+      let errorData;
+      try {
+        errorData = await ownerEmailResponse.json();
+      } catch (e) {
+        const errorText = await ownerEmailResponse.text();
+        errorData = { message: errorText, status: ownerEmailResponse.status };
+      }
+      
+      console.error('Failed to send owner email:', {
+        status: ownerEmailResponse.status,
+        statusText: ownerEmailResponse.statusText,
+        error: errorData
+      });
+      
+      // Отправляем письмо об ошибке отправителю только если это не ошибка аутентификации
+      if (ownerEmailResponse.status !== 401 && ownerEmailResponse.status !== 403) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              from: fromEmail,
+              to: data.email,
+              subject: 'Message Delivery Failed',
+              html: getErrorMessageTemplate(data.name),
+            }),
+          });
+        } catch (err) {
+          console.error('Failed to send error notification:', err);
+        }
+      }
+      
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ 
+          error: 'Failed to send email',
+          details: errorData.message || errorData.error || 'Unknown error',
+          status: ownerEmailResponse.status
+        }),
+      };
+    }
+
+    // Отправляем ответное письмо отправителю
+    try {
+      const autoReplyResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: data.email,
+          subject: 'Thank you for contacting us!',
+          html: `
           <!DOCTYPE html>
           <html>
           <head>
@@ -362,9 +405,20 @@ export const handler: Handler = async (event) => {
       }),
     });
 
-    if (!autoReplyResponse.ok) {
-      const errorData = await autoReplyResponse.json();
-      console.error('Failed to send auto-reply email:', errorData);
+      if (!autoReplyResponse.ok) {
+        let errorData;
+        try {
+          errorData = await autoReplyResponse.json();
+        } catch (e) {
+          const errorText = await autoReplyResponse.text();
+          errorData = { message: errorText };
+        }
+        console.error('Failed to send auto-reply email:', errorData);
+        // Не возвращаем ошибку, так как основное письмо уже отправлено
+      }
+    } catch (autoReplyError: any) {
+      console.error('Error sending auto-reply:', autoReplyError);
+      // Не возвращаем ошибку, так как основное письмо уже отправлено
     }
 
     return {
@@ -380,6 +434,7 @@ export const handler: Handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({ 
         error: error.message || 'Failed to send email',
+        details: error.stack || 'No additional details',
         success: false 
       }),
     };

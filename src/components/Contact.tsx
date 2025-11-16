@@ -126,8 +126,19 @@ export function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Закрываем предыдущее уведомление если открыто
+    setNotification({ ...notification, isOpen: false });
+
     try {
-      const response = await fetch("/.netlify/functions/send-email", {
+      // Определяем URL для функции в зависимости от окружения
+      // В dev режиме Netlify CLI работает на порту 8888
+      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const functionUrl = 
+        isDev 
+          ? "http://localhost:8888/.netlify/functions/send-email"
+          : "/.netlify/functions/send-email";
+
+      const response = await fetch(functionUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,9 +146,16 @@ export function Contact() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        // Если ответ не JSON, создаем объект с текстом ответа
+        const text = await response.text();
+        throw new Error(text || "Failed to parse response");
+      }
 
-      if (response.ok) {
+      if (response.ok && data.success !== false) {
         setNotification({
           isOpen: true,
           type: "success",
@@ -145,9 +163,10 @@ export function Contact() {
         });
         setFormData({ name: "", email: "", message: "", service: "" });
       } else {
-        throw new Error(data.error || "Failed to send message");
+        throw new Error(data.error || data.message || "Failed to send message");
       }
     } catch (error: any) {
+      console.error("Error sending message:", error);
       setNotification({
         isOpen: true,
         type: "error",
