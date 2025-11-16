@@ -272,7 +272,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                      Name
+                     Full Name
                     </label>
                     <Input
                       type="text"
@@ -280,7 +280,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder="Your name"
+                      placeholder="Your full name"
                       required
                       disabled={isSubmitting}
                       className="border-gray-300 dark:border-gray-600"
