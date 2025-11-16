@@ -158,7 +158,7 @@ exports.handler = async (event) => {
     }
 
     const mailOptions = {
-        from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`,
+        from: `"${SMTP_FROM_NAME}" <${SMTP_USER}>`, // Ensure the 'from' is a valid email address
         to: CONTACT_RECIPIENT,
         replyTo: `${name} <${email}>`,
         subject: `New Contact Form Message from ${name}`,
@@ -168,11 +168,8 @@ exports.handler = async (event) => {
             'X-Priority': '1',
             'X-MSMail-Priority': 'High',
             'Importance': 'high',
-            'X-Mailer': 'NodeMailer',
-            'Date': new Date().toUTCString(),
-            'MIME-Version': '1.0',
+            'X-Mailer': 'PHP/' + process.version, // Optional: Add this for better email legitimacy
         },
-        messageId: `<${Date.now()}-${Math.random().toString(36).substring(7)}@${SMTP_USER.split('@')[1]}>`,
     };
 
     try {
@@ -186,6 +183,7 @@ exports.handler = async (event) => {
             }),
         };
     } catch (error) {
+        console.error('Error sending email:', error);
         return {
             statusCode: 500,
             headers: RESPONSE_HEADERS,
