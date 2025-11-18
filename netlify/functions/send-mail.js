@@ -35,10 +35,11 @@ const transporter = nodemailer.createTransport({
 const getServiceLabel = (service) => {
     if (!service) return 'Not specified';
     const labels = {
-        'backend': 'Backend Development',
-        'frontend': 'Frontend Development',
-        'uiux': 'UI/UX Design',
-        'fullstack': 'Full-Stack Development',
+        'backend': 'Backend Developer',
+        'fullstack': 'Full-Stack Developer',
+        'sre': 'Site Reliability Engineer (SRE)',
+        'backend-server': 'Backend/Server Engineer',
+        'frontend': 'Frontend Developer',
     };
     return labels[service] || service.charAt(0).toUpperCase() + service.slice(1);
 };

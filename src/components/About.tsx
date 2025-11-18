@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
-import { Code2, Database, Globe, GitBranch, Server, Layers } from 'lucide-react';
+import { Code2, Database, Globe, GitBranch, Server, Cloud, Brain, Box, Settings } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 export function About() {
@@ -11,13 +11,20 @@ export function About() {
   const technologies = [
     { name: 'PHP', icon: Code2 },
     { name: 'Laravel', icon: Server },
-    { name: 'React', icon: Globe },
     { name: 'JavaScript', icon: Code2 },
-    { name: 'TypeScript', icon: Code2 },
-    { name: 'Node.js', icon: Server },
-    { name: 'HTML/CSS', icon: Layers },
     { name: 'MySQL', icon: Database },
     { name: 'PostgreSQL', icon: Database },
+    { name: 'Cloud AWS', icon: Cloud },
+    { name: 'Google Gemini', icon: Brain },
+    { name: 'OpenAI', icon: Brain },
+    { name: 'Social Engineering', icon: Brain },
+    { name: 'Microservices', icon: Box },
+    { name: 'Teleport', icon: Server },
+    { name: 'Kubernetes', icon: Box },
+    { name: 'Linux OS', icon: Server },
+    { name: 'VPN Config', icon: Settings },
+    { name: 'Proxies', icon: Globe },
+    { name: 'AI Integration', icon: Brain },
   ];
 
   const skills = ['Git', 'REST APIs', 'CI/CD', 'Docker', 'UI Implementation'];
@@ -45,7 +52,7 @@ export function About() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-            Experienced full-stack developer with 5 years in office and freelance work on Upwork and Fiverr. I build scalable backend systems and polished frontend experiences, combining clean engineering with a focus on reliable, user-centered solutions.
+            Experienced backend developer with 5 years in office and freelance work on Upwork and Fiverr. I build scalable backend systems and server infrastructure, combining clean engineering with a focus on reliable, secure, and performant solutions.
             </p>
 
             <div className="mb-8">

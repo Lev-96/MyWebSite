@@ -306,7 +306,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
                   <div>
                     <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                      Service (Optional)
+                      Service
                     </label>
                     <Select
                       value={formData.service}
@@ -320,14 +320,19 @@ const handleSubmit = async (e: React.FormEvent) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="backend">
-                          Backend Development
+                          Backend Developer
+                        </SelectItem>
+                        <SelectItem value="backend-server">
+                          Backend/Server Engineer
+                        </SelectItem>
+                        <SelectItem value="sre">
+                          Site Reliability Engineer (SRE)
+                        </SelectItem>
+                        <SelectItem value="fullstack">
+                          Full-Stack Developer
                         </SelectItem>
                         <SelectItem value="frontend">
-                          Frontend Development
-                        </SelectItem>
-                        <SelectItem value="uiux">UI/UX Design</SelectItem>
-                        <SelectItem value="fullstack">
-                          Full-Stack Development
+                          Frontend Developer
                         </SelectItem>
                       </SelectContent>
                     </Select>

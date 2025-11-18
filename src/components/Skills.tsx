@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
-import { Code2, Database, Server, Box, GitBranch, FileCode2, Globe, Package } from 'lucide-react';
+import { Code2, Database, Server, Box, GitBranch, Globe, Package, Cloud, Brain, Settings } from 'lucide-react';
 import { Card } from './ui/card';
 
 export function Skills() {
@@ -11,16 +11,24 @@ export function Skills() {
   const skills = [
     { name: 'Laravel', icon: Server, color: '#FF2D20' },
     { name: 'PHP', icon: Code2, color: '#777BB4' },
-    { name: 'React', icon: Globe, color: '#61DAFB' },
-    { name: 'Node.js', icon: Server, color: '#339933' },
     { name: 'MySQL', icon: Database, color: '#4479A1' },
     { name: 'Git', icon: GitBranch, color: '#F05032' },
     { name: 'Docker', icon: Box, color: '#2496ED' },
-    { name: 'TypeScript', icon: FileCode2, color: '#3178C6' },
     { name: 'JavaScript', icon: Code2, color: '#F7DF1E' },
     { name: 'PostgreSQL', icon: Database, color: '#4169E1' },
     { name: 'REST APIs', icon: Package, color: '#6c93ec' },
     { name: 'CI/CD', icon: GitBranch, color: '#6c93ec' },
+    { name: 'Cloud AWS', icon: Cloud, color: '#FF9900' },
+    { name: 'Google Gemini', icon: Brain, color: '#4285F4' },
+    { name: 'OpenAI', icon: Brain, color: '#10A37F' },
+    { name: 'Social Engineering', icon: Brain, color: '#6c93ec' },
+    { name: 'Microservices', icon: Box, color: '#326CE5' },
+    { name: 'Teleport', icon: Server, color: '#6c93ec' },
+    { name: 'Kubernetes', icon: Box, color: '#326CE5' },
+    { name: 'Linux OS', icon: Server, color: '#FCC624' },
+    { name: 'VPN Config', icon: Settings, color: '#6c93ec' },
+    { name: 'Proxies', icon: Globe, color: '#6c93ec' },
+    { name: 'AI Integration', icon: Brain, color: '#10A37F' },
   ];
 
   return (

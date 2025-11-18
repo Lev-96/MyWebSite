@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
-import { Server, Globe, Palette } from 'lucide-react';
+import { Server, Database, Code2, Brain } from 'lucide-react';
 import { Card } from './ui/card';
 
 export function Services() {
@@ -11,21 +11,27 @@ export function Services() {
   const services = [
     {
       title: 'Backend Development',
+      icon: Code2,
+      description:
+        'Build robust, scalable server-side applications with Laravel and PHP. Expert in API development, authentication, database design, and server-side architecture.',
+    },
+    {
+      title: 'Server Management',
       icon: Server,
       description:
-        'Build robust, scalable server-side applications with Laravel, Node.js, and modern databases. Expert in API development, authentication, and database design.',
+        'Complete server administration and management. Configuration, deployment, monitoring, security hardening, and optimization of server infrastructure.',
     },
     {
-      title: 'Frontend Development',
-      icon: Globe,
+      title: 'Database & Cloud',
+      icon: Database,
       description:
-        'Create responsive, performant web applications using React, TypeScript, and modern frontend tools. Focus on user experience and clean code.',
+        'Database design, optimization, and management with MySQL and PostgreSQL. Cloud infrastructure setup and management with AWS and other cloud providers.',
     },
     {
-      title: 'UI/UX Design',
-      icon: Palette,
+      title: 'AI Integration',
+      icon: Brain,
       description:
-        'Design intuitive, beautiful interfaces that users love. Transform ideas into pixel-perfect implementations with attention to detail and accessibility.',
+        'Integrate AI capabilities into backend systems using OpenAI, Google Gemini, and other AI services. Build intelligent applications with natural language processing and machine learning APIs.',
     },
   ];
 
@@ -45,7 +51,7 @@ export function Services() {
           My Services
         </motion.h2>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {services.map((service, index) => {
             const Icon = service.icon;
             return (

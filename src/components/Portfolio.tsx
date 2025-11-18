@@ -13,17 +13,17 @@ export function Portfolio() {
     {
       title: 'E-Commerce Platform',
       image: 'https://images.unsplash.com/photo-1717996563514-e3519f9ef9f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB3ZWIlMjBhcHBsaWNhdGlvbnxlbnwxfHx8fDE3NjMyNTIzNDR8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Full-stack e-commerce solution with Laravel & React',
+      description: 'Backend e-commerce solution with Laravel',
     },
     {
       title: 'Project Management Tool',
       image: 'https://images.unsplash.com/photo-1753715613831-9e48eac86813?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2RpbmclMjBwcm9qZWN0JTIwc2NyZWVufGVufDF8fHx8MTc2MzMxMzI5N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Real-time collaboration platform built with Node.js',
+      description: 'Backend API for real-time collaboration platform with Laravel',
     },
     {
-      title: 'SaaS Dashboard',
+      title: 'SaaS Dashboard Backend',
       image: 'https://images.unsplash.com/photo-1649442746245-f51f4b76963f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwc3RhcnR1cCUyMHdlYnNpdGV8ZW58MXx8fHwxNzYzMzEyODE3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Analytics dashboard with TypeScript & React',
+      description: 'Backend API for analytics dashboard with Laravel & MySQL',
     },
     {
       title: 'Mobile App Backend',
@@ -31,9 +31,9 @@ export function Portfolio() {
       description: 'RESTful API with Laravel & PostgreSQL',
     },
     {
-      title: 'Corporate Website',
+      title: 'Corporate Website Backend',
       image: 'https://images.unsplash.com/photo-1649442746245-f51f4b76963f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwc3RhcnR1cCUyMHdlYnNpdGV8ZW58MXx8fHwxNzYzMzEyODE3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Modern responsive website with React',
+      description: 'Backend API and server management for corporate website',
     },
     {
       title: 'Booking System',

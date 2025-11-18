@@ -64,7 +64,7 @@ export function Hero() {
                 Levon Bakunts
               </h1>
               <p className="text-gray-500 dark:text-gray-400 text-xl tracking-wide">
-                Full-Stack Developer
+                Backend Developer
               </p>
             </div>
           </motion.div>
@@ -81,8 +81,7 @@ export function Hero() {
             </h2>
 
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl">
-              I build fast, reliable, and user-focused applications from backend
-              to frontend.
+              I build fast, reliable, and scalable backend systems and server infrastructure.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start">
