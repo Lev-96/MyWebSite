@@ -64,7 +64,8 @@ export function Hero() {
                 Levon Bakunts
               </h1>
               <p className="text-gray-500 dark:text-gray-400 text-xl tracking-wide">
-                Backend Developer
+                Backend Developer |
+                Information Security Assistant | Associate
               </p>
             </div>
           </motion.div>
