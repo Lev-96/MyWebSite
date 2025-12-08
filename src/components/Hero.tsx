@@ -53,7 +53,7 @@ export function Hero() {
                 style={{
                   objectPosition: "top",
                 }}
-                src="/img/myphoto.jpg"
+                src="/img/myphoto.png"
                 alt="Developer Avatar"
                 className="relative w-64 h-64 sm:w-80 sm:h-80 object-cover object-top object-center rounded-full border-4 border-white dark:border-gray-800 shadow-2xl"
               />
