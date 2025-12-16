@@ -226,14 +226,6 @@ const handleSubmit = async (e: React.FormEvent) => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h3 className="text-gray-900 dark:text-white mb-6">Get In Touch</h3>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                  <Phone className="w-5 h-5 text-[#6c93ec]" />
-                  <span>+374 (33) 733-633</span>
-                </div>
-
-                <div>
                   <h4 className="text-gray-900 dark:text-white mb-4">
                     Connect With Me
                   </h4>
