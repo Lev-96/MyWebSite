@@ -226,6 +226,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h3 className="text-gray-900 dark:text-white mb-6">Get In Touch</h3>
+
+              <div className="space-y-6">
+                <div>
                   <h4 className="text-gray-900 dark:text-white mb-4">
                     Connect With Me
                   </h4>
